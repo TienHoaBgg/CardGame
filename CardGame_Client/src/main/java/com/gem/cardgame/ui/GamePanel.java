@@ -28,7 +28,7 @@ public class GamePanel extends JPanel {
     private Image bgImage;
     
     public GamePanel() {
-        bgImage = Utils.getInstance().getImage("bg_board.jpeg");
+        bgImage = Utils.getInstance().getImage("bg_board.jpg");
 
         
         this.setBackground(Color.red);
