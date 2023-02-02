@@ -38,9 +38,9 @@ public class Utils {
     }
     
     public Image getImage(String name) {
-//        String path = "/com/gem/cardgame/resources/" + name;
+        String path = "./resource/" + name;
         try {
-            return ImageIO.read(getClass().getResource("/com/gem/cardgame/resources/bg_board.jpeg"));
+            return ImageIO.read(new File(path));
         } catch (IOException e) {
             logErr(e.getLocalizedMessage());
         }

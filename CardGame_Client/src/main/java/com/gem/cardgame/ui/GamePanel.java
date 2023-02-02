@@ -28,13 +28,8 @@ public class GamePanel extends JPanel {
     private Image bgImage;
     
     public GamePanel() {
-        try {
-            bgImage = ImageIO.read(new File("/resource/avt.jpg"));
-//
-//        bgImage = imgIcon.getImage();
-        } catch (IOException ex) {
-            Logger.getLogger(GamePanel.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        bgImage = Utils.getInstance().getImage("bg_board.jpeg");
+
         
         this.setBackground(Color.red);
 
@@ -44,8 +39,8 @@ public class GamePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D graphics2D = (Graphics2D) g;
-        
-//        graphics2D.drawImage(bgImage, 0, 0, this.getWidth(), this.getHeight(), null);
+        // background image
+        graphics2D.drawImage(bgImage, 0, 0, this.getWidth(), this.getHeight(), null);
         
         
         
