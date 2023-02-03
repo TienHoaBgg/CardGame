@@ -4,19 +4,16 @@
  */
 package com.gem.cardgame.ui;
 
+import com.gem.cardgame.ManagePlay;
 import com.gem.cardgame.Utils;
-import static com.gem.cardgame.Utils.logErr;
-import java.awt.BasicStroke;
-import java.awt.Color;
+import com.gem.cardgame.obj.CardObj;
+import com.gem.cardgame.obj.CardType;
+import com.gem.cardgame.obj.SizeObj;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JPanel;
 
 /**
@@ -26,13 +23,14 @@ import javax.swing.JPanel;
 public class GamePanel extends JPanel {
 
     private Image bgImage;
-    
+    public ManagePlay manage;
+    private List<CardObj> cards;
+     
+     
     public GamePanel() {
-        bgImage = Utils.getInstance().getImage("bg_board.jpg");
-
+        bgImage = Utils.getInstance().getImage("background_board.jpg");
+        manage = new ManagePlay();
         
-        this.setBackground(Color.red);
-
     }
     
     @Override
@@ -41,12 +39,9 @@ public class GamePanel extends JPanel {
         Graphics2D graphics2D = (Graphics2D) g;
         // background image
         graphics2D.drawImage(bgImage, 0, 0, this.getWidth(), this.getHeight(), null);
-        
-        
-        
+        manage.drawAll(graphics2D, new SizeObj(this.getWidth(), this.getHeight()));
         
     }
-    
     
     
 }
