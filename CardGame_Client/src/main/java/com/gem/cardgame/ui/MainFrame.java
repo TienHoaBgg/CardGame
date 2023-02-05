@@ -159,8 +159,9 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String name = txtChat.getText();
-        gameView.manage.addUser("sss", name);
+//        String name = txtChat.getText();
+//        gameView.manage.addUser("sss", name);
+        gameView.manage.test();
         repaint();
     }//GEN-LAST:event_jButton1ActionPerformed
 

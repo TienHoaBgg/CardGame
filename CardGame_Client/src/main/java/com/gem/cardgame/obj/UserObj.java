@@ -7,6 +7,8 @@ package com.gem.cardgame.obj;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -16,11 +18,16 @@ public class UserObj extends Obj2D {
     private String userId;
     private String userName;
     private int price;
+    private boolean isRoot;
     private PositionEnum positionEnum;
+    private List<CardObj> cards;
+    private boolean cardOpen;
+    private PositionObj cardPosition;
 
     public UserObj(String userId, String userName) {
         this.userId = userId;
         this.userName = userName;
+        cards = new ArrayList<>();
     }
     
     public String getUserId() {
@@ -39,6 +46,14 @@ public class UserObj extends Obj2D {
         this.userName = userName;
     }
 
+    public boolean isIsRoot() {
+        return isRoot;
+    }
+
+    public void setIsRoot(boolean isRoot) {
+        this.isRoot = isRoot;
+    }
+    
     public int getPrice() {
         return price;
     }
@@ -55,6 +70,30 @@ public class UserObj extends Obj2D {
         this.positionEnum = positionEnum;
     }
 
+    public List<CardObj> getCards() {
+        return cards;
+    }
+
+    public void setCards(List<CardObj> cards) {
+        this.cards = cards;
+    }
+
+    public boolean isCardOpen() {
+        return cardOpen;
+    }
+
+    public void setCardOpen(boolean cardOpen) {
+        this.cardOpen = cardOpen;
+    }
+
+    public PositionObj getCardPosition() {
+        return cardPosition;
+    }
+
+    public void setCardPosition(PositionObj cardPosition) {
+        this.cardPosition = cardPosition;
+    }
+    
     @Override
     public void draw(Graphics2D g2) {
         super.draw(g2);

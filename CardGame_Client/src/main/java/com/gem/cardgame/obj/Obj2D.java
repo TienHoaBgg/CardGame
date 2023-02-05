@@ -78,7 +78,8 @@ public class Obj2D {
     }
     
     public void draw(Graphics2D g2){
-        g2.drawImage(img, (int)x, (int)y, (int)width, (int)height, null);
+        Image image = img.getScaledInstance((int)width, (int)height, Image.SCALE_SMOOTH);
+        g2.drawImage(image, (int)x, (int)y, (int)width, (int)height, null);
         
     }
     

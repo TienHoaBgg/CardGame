@@ -7,12 +7,10 @@ package com.gem.cardgame.ui;
 import com.gem.cardgame.ManagePlay;
 import com.gem.cardgame.Utils;
 import com.gem.cardgame.obj.CardObj;
-import com.gem.cardgame.obj.CardType;
 import com.gem.cardgame.obj.SizeObj;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 

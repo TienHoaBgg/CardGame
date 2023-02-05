@@ -13,6 +13,8 @@ import java.awt.Image;
 public class CardObj extends Obj2D {
     private int value;
     private CardType type;
+    private boolean isUp;
+    private boolean isOpen;
 
     public CardObj(int value, CardType type) {
         this.value = value;
@@ -25,8 +27,8 @@ public class CardObj extends Obj2D {
         this.img = image;
         this.x = 0;
         this.y = 0;
-        this.width = 50;
-        this.height = 80;
+        this.width = 60;
+        this.height = 90;
     }
     
     public int getValue() {
@@ -43,6 +45,22 @@ public class CardObj extends Obj2D {
 
     public void setType(CardType type) {
         this.type = type;
+    }
+
+    public boolean isIsUp() {
+        return isUp;
+    }
+
+    public void setIsUp(boolean isUp) {
+        this.isUp = isUp;
+    }
+
+    public boolean isOpen() {
+        return isOpen;
+    }
+
+    public void setOpen(boolean isOpen) {
+        this.isOpen = isOpen;
     }
     
 }

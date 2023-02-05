@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class UserManager {
 
-    private List<UserObj> users;
+    public List<UserObj> users;
 
     public UserManager() {
         users = new ArrayList<>();
@@ -166,14 +166,14 @@ public class UserManager {
     
     // bottom center
     private PositionObj bottomCenterPosition(SizeObj screenSize, SizeObj objSize) {
-        float firstX = screenSize.getWidth() / 2 - (objSize.getWidth() * 1.5f);
+        float firstX = screenSize.getWidth() / 2 - (objSize.getWidth()/2);
         float firstY = screenSize.getHeight() - (objSize.getHeight() * 1.5f);
         return new PositionObj(firstX, firstY);
     }
     
     // top center
     private PositionObj topCenterPosition(SizeObj screenSize, SizeObj objSize) {
-        float x = screenSize.getWidth() / 2 - (objSize.getWidth() * 1.5f);
+        float x = screenSize.getWidth() / 2 - (objSize.getWidth()/2);
         float y = objSize.getHeight()/2;
         return new PositionObj(x, y);
     }
