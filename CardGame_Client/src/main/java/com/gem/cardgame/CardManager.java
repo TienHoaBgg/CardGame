@@ -11,11 +11,8 @@ import com.gem.cardgame.obj.SizeObj;
 import com.gem.cardgame.obj.UserObj;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Timer;
 
 /**
  *
@@ -24,19 +21,22 @@ import javax.swing.Timer;
 public class CardManager {
     
     private List<CardObj> cards;
-    private Timer timer;
-    private UserObj currentUser;
+    private List<UserObj> users;
     private float xStart;
     private float yStart;
-    
     private CardObj blackCard;
+    private CardObj centerCard;
+    private CardCallBack callBack;
+    private int currentIndex;
+    private boolean isAnimation;
+    
     
     public CardManager () {
         init();
-        timer = new Timer(10, (ActionEvent e) -> {
-            
-            
-        });
+    }
+    
+    public void setCallBack(CardCallBack callBack) {
+        this.callBack = callBack;
     }
     
     private void init() {
@@ -53,24 +53,51 @@ public class CardManager {
         }
         Image upImage = Utils.getInstance().getImage("cards/back_card.png");
         blackCard = new CardObj(0, CardType.UP, upImage);
+        centerCard = new CardObj(0, CardType.UP, upImage);
         cards.add(blackCard);
     }
     
-    public void cardAnimation(Graphics2D g2, SizeObj screenSize, UserObj user) {
-        timer.stop();
-        currentUser = user;
-        float width = screenSize.getWidth()/17;
-        float height = width/0.7f;
-        float xCenter = screenSize.getWidth()/2 - width/2;
-        float yCenter = screenSize.getHeight()/2 - height/2;
-        
-        
-        
+    public void startGame() {
+        isAnimation = true;
+        currentIndex = 0;
+        blackCard.setX(centerCard.getX());
+        blackCard.setY(centerCard.getY());
+    }
+    
+    public void cardAnimation() {
+        UserObj userObj = users.get(currentIndex);
+        float userCardX = userObj.getCardPosition().getX();
+        float userCardY = userObj.getCardPosition().getY();
+        float spaceX;
+        float spaceY;
+//        if (userCardX > centerCard.getX()) {
+            spaceX = (userCardX - centerCard.getX())/15;
+//        } else {
+//            spaceX = (centerCard.getX() - userCardX)/10;
+//        }
+//        if (userCardY > centerCard.getY()) {
+            spaceY = (userCardY - centerCard.getY())/15;
+//        } else {
+//            spaceY = (centerCard.getY() - userCardY)/10;
+//        }
+        float x = blackCard.getX() + spaceX;
+        float y = blackCard.getY() + spaceY;
+        blackCard.setPosition(new PositionObj(x, y));
+        if ((x > userCardX - 5 && x < userCardX + 5) && (y < userCardY + 5 && y > userCardY - 5)) {
+            if (currentIndex < users.size() - 1) {
+                currentIndex++;
+                blackCard.setX(centerCard.getX());
+                blackCard.setY(centerCard.getY());
+            } else {
+                isAnimation = false;
+                callBack.CardAnimDone();
+            }
+        }
     }
     
     
     public void drawAll(Graphics2D g2, SizeObj screenSize, List<UserObj> users) {
-        drawBlackCard(g2, screenSize);
+        this.users = users;
         for (UserObj user : users) {
             switch (user.getPositionEnum()) {
                 case BOTTOM -> {
@@ -79,7 +106,7 @@ public class CardManager {
                     float xCenter = screenSize.getWidth()/2;
                     float yCard = screenSize.getHeight() - height;
                     user.setCardPosition(new PositionObj(xCenter - width/2, yCard));
-                    if (!user.isCardOpen()) {
+                    if (user.isCardOpen()) {
                         float widthCards = 3 * (width*2/3);
                         xCenter -= widthCards/2;
                     } else {
@@ -88,7 +115,7 @@ public class CardManager {
                     for (int i = 0; i < 3; i++) {
                         CardObj card = cards.get(i);
                         card.setSize(width, height);
-                        if (!user.isCardOpen()) {
+                        if (user.isCardOpen()) {
                             card.setPosition(xCenter, yCard);
                             card.draw(g2);
                             xCenter += width*2/3;
@@ -132,7 +159,7 @@ public class CardManager {
                     for (int i = 0; i < 3; i++) {
                         CardObj card = cards.get(i);
                         card.setSize(width, height);
-                        if (!user.isCardOpen()) {
+                        if (user.isCardOpen()) {
                             card.setPosition(xCard, yCard);
                             card.draw(g2);
                             xCard += width*2/3;
@@ -149,7 +176,7 @@ public class CardManager {
                     float yCard = user.getY();
                     user.setCardPosition(new PositionObj(xCard, yCard));
                     
-                    if (!user.isCardOpen()) {
+                    if (user.isCardOpen()) {
                         float widthCards = 2 * (width*2/3) + width;
                         xCard -= widthCards;
                     } else {
@@ -159,7 +186,7 @@ public class CardManager {
                     for (int i = 0; i < 3; i++) {
                         CardObj card = cards.get(i);
                         card.setSize(width, height);
-                        if (!user.isCardOpen()) {
+                        if (user.isCardOpen()) {
                             card.setPosition(xCard, yCard);
                             card.draw(g2);
                             xCard += width*2/3;
@@ -172,6 +199,7 @@ public class CardManager {
                 default -> { }
             }
         }
+        drawBlackCard(g2, screenSize);
     }
     
     private void drawBlackCard(Graphics2D g2, SizeObj screenSize) {
@@ -179,9 +207,18 @@ public class CardManager {
         float height = width/0.7f;
         float xCenter = screenSize.getWidth()/2 - width/2;
         float yCenter = screenSize.getHeight()/2 - height/2;
-        blackCard.setPosition(new PositionObj(xCenter, yCenter));
-        blackCard.setSize(width, height);
-        blackCard.draw(g2);
+        centerCard.setPosition(new PositionObj(xCenter, yCenter));
+        centerCard.setSize(width, height);
+        centerCard.draw(g2);
+        if (isAnimation) {
+            blackCard.setSize(width, height);
+            blackCard.draw(g2);
+        }
+    }
+    
+    
+    public interface CardCallBack {
+        void CardAnimDone();
     }
     
 }
