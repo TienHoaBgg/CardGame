@@ -12,6 +12,7 @@ import com.gem.cardgame.obj.SizeObj;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 /**
@@ -24,14 +25,67 @@ public class GamePanel extends JPanel implements CardCallBack {
     public UserManager userManager;
     public CardManager cardManager;
     private boolean isRunning;
+    private ButtonsPanel pnButtons; 
+    private SliderDialog sliderDialog;
     
-     
+    
     public GamePanel() {
+        initPNButton();
         bgImage = Utils.getInstance().getImage("background_board.jpg");
         userManager = new UserManager();
         cardManager = new CardManager();
         cardManager.setCallBack(this);
         userManager.addUser("sss", "User Random");
+        
+    }
+    
+    private void initPNButton() {
+        pnButtons = new ButtonsPanel();
+        sliderDialog = new SliderDialog(null, true);
+        add(pnButtons);
+        repaint();
+        pnButtons.setCallBack(new ButtonsPanel.IButtonCallBack() {
+            @Override
+            public void toClickAction() {
+                sliderDialog.setValueTo(0, 100);
+                sliderDialog.setVisible(true);
+                
+            }
+
+            @Override
+            public void theoClickAction() {
+                sliderDialog.setValueTo(100, 200);
+                sliderDialog.setVisible(true);
+            }
+
+            @Override
+            public void nanClickAction() {
+                sliderDialog.setValueTo(300, 400);
+                sliderDialog.setVisible(true);
+            }
+
+            @Override
+            public void nanPressAction() {
+                
+            }
+
+            @Override
+            public void boClickAction() {
+                
+            }
+        });
+        sliderDialog.setCallBack((int value) -> {
+            System.out.println("Tố: " + value);
+        });
+        
+    }
+    
+    private void updateU(SizeObj screenSize) {
+        pnButtons.setBounds((int)screenSize.getWidth() - 206, (int)screenSize.getHeight() - 76, 206, 76);
+        pnButtons.updateView();
+//        pnButtons.revalidate();
+//        pnButtons.setBorderPainted(false);
+//        pnButtons.setContentAreaFilled(false);
         
     }
     
@@ -43,7 +97,7 @@ public class GamePanel extends JPanel implements CardCallBack {
         isRunning = true;
         cardManager.startGame();
         new Thread((() -> {
-            while (isRunning) {                
+            while (isRunning) {
                 try {
                     cardManager.cardAnimation();
                     repaint();
@@ -60,10 +114,12 @@ public class GamePanel extends JPanel implements CardCallBack {
         super.paintComponent(g);
         Graphics2D graphics2D = (Graphics2D) g;
         SizeObj screenSize = new SizeObj(this.getWidth(), this.getHeight());
+        
         // background image
         graphics2D.drawImage(bgImage, 0, 0, this.getWidth(), this.getHeight(), null);
         userManager.drawAll(graphics2D, screenSize);
         cardManager.drawAll(graphics2D, screenSize, userManager.users);
+        updateU(screenSize);
     }
 
     @Override

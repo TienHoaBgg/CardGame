@@ -4,6 +4,14 @@
  */
 package com.gem.cardgame.ui;
 
+import com.gem.cardgame.SocketManager;
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author gem
@@ -17,6 +25,9 @@ public class JoinFrame extends javax.swing.JFrame {
         initComponents();
     }
 
+    private boolean isConnect = false;
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -41,6 +52,11 @@ public class JoinFrame extends javax.swing.JFrame {
 
         jButton1.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
         jButton1.setText("JOIN");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jLabel2.setFont(new java.awt.Font("Helvetica Neue", 2, 12)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(0, 153, 0));
@@ -82,6 +98,16 @@ public class JoinFrame extends javax.swing.JFrame {
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        if (isConnect) {
+            SocketManager.getInstance().disconnect();
+        } else {
+            SocketManager.getInstance().connect();
+        }
+        isConnect = !isConnect;
+        
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
