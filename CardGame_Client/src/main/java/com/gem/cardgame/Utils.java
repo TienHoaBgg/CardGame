@@ -47,6 +47,10 @@ public class Utils {
         return null;
     }
     
+    public static void logInfo(String err) {
+        System.out.println("INFO: " + err);
+    }
+    
     public static void logErr(String err) {
         System.out.println("ERROR: " + err);
     }

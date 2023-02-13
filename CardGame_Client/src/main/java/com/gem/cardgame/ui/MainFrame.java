@@ -4,8 +4,20 @@
  */
 package com.gem.cardgame.ui;
 
+import com.gem.cardgame.CurrentSessionUtils;
+import com.gem.cardgame.SocketManager;
+import com.gem.cardgame.Utils;
+import com.gem.cardgame.obj.ChatEventModel;
 import com.gem.cardgame.ui.GamePanel;
+import com.google.gson.Gson;
+import io.socket.client.Socket;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.KeyEvent;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 /**
  *
@@ -16,22 +28,63 @@ public class MainFrame extends javax.swing.JFrame {
     /**
      * Creates new form MainFrame
      */
-    
     private GamePanel gameView;
-    
+    private Socket socket;
+    private Gson gson;
+
     public MainFrame() {
         initComponents();
         setupGameBoard();
+        gson = new Gson();
+        socket = SocketManager.getInstance().getSocket();
+        chatEventListener();
     }
 
     private void setupGameBoard() {
         gameView = new GamePanel();
         mainPanel.add(gameView);
-        
+
     }
-    
-    
-    
+
+    private void chatEventListener() {
+        socket.on("CHAT_EVENT_LISTENER", (args) -> {
+            String jsonString = args[0].toString();
+            ChatEventModel model = gson.fromJson(jsonString, ChatEventModel.class);
+            if (model != null) {
+                String message = model.getUserName() + ": " + model.getMessage() + "\n";
+                jTextChat.setEditable(true);
+                appendToLogger(message, Color.BLUE);
+                Utils.logInfo(model.getUserId() + " - " + model.getUserName() + " - " + model.getMessage());
+            }
+        });
+    }
+
+    private synchronized void appendToLogger(String msg, Color c) {
+        java.awt.EventQueue.invokeLater(() -> {
+            StyleContext sc = StyleContext.getDefaultStyleContext();
+            AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, c);
+            aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console");
+            aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
+            int len = jTextChat.getDocument().getLength();
+            jTextChat.setCaretPosition(len);
+            jTextChat.setCharacterAttributes(aset, false);
+            jTextChat.replaceSelection(msg);
+            jTextChat.setEditable(false);
+        });
+    }
+
+    private void sendChatMsg(String msg) {
+        ChatEventModel model = new ChatEventModel();
+        model.setUserId(CurrentSessionUtils.USER_ID);
+        model.setUserName(CurrentSessionUtils.USER_NAME);
+        model.setMessage(msg);
+        socket.emit("SEND_CHAT_EVENT", gson.toJson(model));
+        jTextChat.setEditable(true);
+        String message = "Bạn: " + msg + "\n";
+        appendToLogger(message, Color.BLACK);
+        txtChatMessage.setText("");
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -43,13 +96,13 @@ public class MainFrame extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         menuPanel = new javax.swing.JPanel();
-        txtChat = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jButton5 = new javax.swing.JButton();
+        txtChatMessage = new javax.swing.JTextField();
+        sendChatBtn = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTextChat = new javax.swing.JTextPane();
         mainPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -59,20 +112,18 @@ public class MainFrame extends javax.swing.JFrame {
         menuPanel.setMaximumSize(new java.awt.Dimension(300, 32767));
         menuPanel.setPreferredSize(new java.awt.Dimension(300, 470));
 
-        jButton1.setText("SEND");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+        txtChatMessage.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtChatMessageKeyPressed(evt);
             }
         });
 
-        jTextArea1.setEditable(false);
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
-
-        jButton5.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
-        jButton5.setText("Out Game");
+        sendChatBtn.setText("SEND");
+        sendChatBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendChatBtnActionPerformed(evt);
+            }
+        });
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -98,42 +149,52 @@ public class MainFrame extends javax.swing.JFrame {
             jTable1.getColumnModel().getColumn(0).setMaxWidth(40);
         }
 
+        jLabel1.setFont(new java.awt.Font("Helvetica Neue", 1, 16)); // NOI18N
+        jLabel1.setText("Bảng kết quả");
+
+        jScrollPane3.setViewportView(jTextChat);
+
         javax.swing.GroupLayout menuPanelLayout = new javax.swing.GroupLayout(menuPanel);
         menuPanel.setLayout(menuPanelLayout);
         menuPanelLayout.setHorizontalGroup(
             menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(menuPanelLayout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
                     .addGroup(menuPanelLayout.createSequentialGroup()
+                        .addContainerGap()
                         .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton5)
                             .addGroup(menuPanelLayout.createSequentialGroup()
-                                .addComponent(txtChat, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtChatMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(sendChatBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                    .addGroup(menuPanelLayout.createSequentialGroup()
+                        .addGap(85, 85, 85)
+                        .addComponent(jLabel1)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addGroup(menuPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane3)))
                 .addContainerGap())
         );
         menuPanelLayout.setVerticalGroup(
             menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, menuPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtChat, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtChatMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sendChatBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
-        txtChat.getAccessibleContext().setAccessibleName("");
+        txtChatMessage.getAccessibleContext().setAccessibleName("");
 
         jPanel1.add(menuPanel, java.awt.BorderLayout.LINE_START);
 
@@ -147,7 +208,7 @@ public class MainFrame extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 1184, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 1386, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -158,11 +219,22 @@ public class MainFrame extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String name = txtChat.getText();
-        gameView.addUser("sss", name);
-        repaint();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void sendChatBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendChatBtnActionPerformed
+        String msg = txtChatMessage.getText();
+        if (!"".equals(msg)) {
+            sendChatMsg(msg);
+        }
+    }//GEN-LAST:event_sendChatBtnActionPerformed
+
+    private void txtChatMessageKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtChatMessageKeyPressed
+        Utils.logInfo("Key: " + evt.getKeyCode());
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            String msg = txtChatMessage.getText();
+            if (!"".equals(msg)) {
+                sendChatMsg(msg);
+            }
+        }
+    }//GEN-LAST:event_txtChatMessageKeyPressed
 
     /**
      * @param args the command line arguments
@@ -200,15 +272,15 @@ public class MainFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton5;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTable jTable1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextPane jTextChat;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel menuPanel;
-    private javax.swing.JTextField txtChat;
+    private javax.swing.JButton sendChatBtn;
+    private javax.swing.JTextField txtChatMessage;
     // End of variables declaration//GEN-END:variables
 }

@@ -4,13 +4,13 @@
  */
 package com.gem.cardgame.ui;
 
+import com.gem.cardgame.CurrentSessionUtils;
 import com.gem.cardgame.SocketManager;
-import io.socket.client.IO;
-import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.gem.cardgame.Utils;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.TemporalField;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -24,10 +24,44 @@ public class JoinFrame extends javax.swing.JFrame {
     public JoinFrame() {
         initComponents();
     }
+    
+    private void connectToServer() {
+        if (SocketManager.getInstance().isConnected()) {
+            pushToMain();
+        } else {
+            SocketManager.getInstance().connect((SocketManager.ConnectStateEnum state1) -> {
+                if (null == state1) {
+                } else {
+                    switch (state1) {
+                        case CONNECTING ->
+                            txtStatus.setText("Connecting to server...");
+                        case DISCONNECTED ->
+                            txtStatus.setText("Disconnected...");
+                        default -> {
+                            txtStatus.setText("Connected");
+                            pushToMain();
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    private void pushToMain() {
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+                MainFrame mainFrame = new MainFrame();
+                mainFrame.setVisible(true);
+                mainFrame.validate();
+                this.setVisible(false);
+                this.dispose();
+            } catch (InterruptedException ex) {
+                Utils.logErr(ex.getLocalizedMessage());
+            }
+        }).start();
+    }
 
-    private boolean isConnect = false;
-    
-    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -38,30 +72,30 @@ public class JoinFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
+        userNameTextFiel = new javax.swing.JTextField();
+        btnJoin = new javax.swing.JButton();
+        txtStatus = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
 
         jLabel1.setText("Tên đăng nhập: ");
 
-        jTextField1.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
-        jTextField1.setSize(new java.awt.Dimension(78, 35));
+        userNameTextFiel.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
+        userNameTextFiel.setSize(new java.awt.Dimension(78, 35));
 
-        jButton1.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
-        jButton1.setText("JOIN");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnJoin.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
+        btnJoin.setText("JOIN");
+        btnJoin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btnJoinActionPerformed(evt);
             }
         });
 
-        jLabel2.setFont(new java.awt.Font("Helvetica Neue", 2, 12)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(0, 153, 0));
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("Connecting to server...");
+        txtStatus.setFont(new java.awt.Font("Helvetica Neue", 2, 12)); // NOI18N
+        txtStatus.setForeground(new java.awt.Color(0, 153, 0));
+        txtStatus.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        txtStatus.setText("Connecting to server...");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -70,15 +104,15 @@ public class JoinFrame extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(46, 46, 46)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(userNameTextFiel, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(37, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnJoin, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(107, 107, 107))
         );
         layout.setVerticalGroup(
@@ -87,11 +121,11 @@ public class JoinFrame extends javax.swing.JFrame {
                 .addGap(57, 57, 57)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(userNameTextFiel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jLabel2)
+                .addComponent(txtStatus)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnJoin, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(40, Short.MAX_VALUE))
         );
 
@@ -99,15 +133,17 @@ public class JoinFrame extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        if (isConnect) {
-            SocketManager.getInstance().disconnect();
+    private void btnJoinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJoinActionPerformed
+        String userName = userNameTextFiel.getText();
+        if (userName.equals("")) {
+            JOptionPane.showMessageDialog(null, "Nhập tên vào để còn biết ai mà tính nợ anh ơi :))");
         } else {
-            SocketManager.getInstance().connect();
+            String userId = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() + "";
+            CurrentSessionUtils.USER_NAME = userName;
+            CurrentSessionUtils.USER_ID = userId;
+            connectToServer();
         }
-        isConnect = !isConnect;
-        
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_btnJoinActionPerformed
 
     /**
      * @param args the command line arguments
@@ -145,9 +181,9 @@ public class JoinFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton btnJoin;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JLabel txtStatus;
+    private javax.swing.JTextField userNameTextFiel;
     // End of variables declaration//GEN-END:variables
 }
