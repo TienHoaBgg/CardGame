@@ -8,16 +8,21 @@ import com.gem.cardgame.CurrentSessionUtils;
 import com.gem.cardgame.SocketManager;
 import com.gem.cardgame.Utils;
 import com.gem.cardgame.obj.ChatEventModel;
+import com.gem.cardgame.obj.UserEventModel;
 import com.gem.cardgame.ui.GamePanel;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.socket.client.Socket;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.util.List;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
+import java.lang.reflect.Type;
+
 
 /**
  *
@@ -29,15 +34,15 @@ public class MainFrame extends javax.swing.JFrame {
      * Creates new form MainFrame
      */
     private GamePanel gameView;
-    private Socket socket;
-    private Gson gson;
+    private final Socket socket;
+    private final Gson gson;
 
     public MainFrame() {
         initComponents();
         setupGameBoard();
         gson = new Gson();
         socket = SocketManager.getInstance().getSocket();
-        chatEventListener();
+        socketEventListener();
     }
 
     private void setupGameBoard() {
@@ -46,7 +51,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     }
 
-    private void chatEventListener() {
+    private void socketEventListener() {
         socket.on("CHAT_EVENT_LISTENER", (args) -> {
             String jsonString = args[0].toString();
             ChatEventModel model = gson.fromJson(jsonString, ChatEventModel.class);
@@ -54,9 +59,27 @@ public class MainFrame extends javax.swing.JFrame {
                 String message = model.getUserName() + ": " + model.getMessage() + "\n";
                 jTextChat.setEditable(true);
                 appendToLogger(message, Color.BLUE);
-                Utils.logInfo(model.getUserId() + " - " + model.getUserName() + " - " + model.getMessage());
             }
         });
+        UserEventModel user = new UserEventModel(CurrentSessionUtils.USER_ID, CurrentSessionUtils.USER_NAME);
+        socket.emit("JOIN_GAME_REQUEST", gson.toJson(user));
+        
+        socket.on("CURRENT_PLAYERS", (args) -> {
+            String json = args[0].toString();
+            List<UserEventModel> currentPlayes = gson.fromJson(json, new TypeToken<List<UserEventModel>>() {}.getType());
+            for (UserEventModel currentPlaye : currentPlayes) {
+                gameView.userManager.addUser(currentPlaye.getUserID(), currentPlaye.getUserName());
+                repaint();
+            }
+        });
+        
+        socket.on("JOIN_GAME_EVENT", (args) -> {
+            String json = args[0].toString();
+            UserEventModel userJoin = gson.fromJson(json, UserEventModel.class);
+            gameView.userManager.addUser(userJoin.getUserID(), userJoin.getUserName());
+            repaint();
+        });
+        
     }
 
     private synchronized void appendToLogger(String msg, Color c) {
@@ -227,7 +250,6 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_sendChatBtnActionPerformed
 
     private void txtChatMessageKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtChatMessageKeyPressed
-        Utils.logInfo("Key: " + evt.getKeyCode());
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
             String msg = txtChatMessage.getText();
             if (!"".equals(msg)) {

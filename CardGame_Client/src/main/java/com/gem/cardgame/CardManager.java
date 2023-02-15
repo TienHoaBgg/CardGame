@@ -95,7 +95,6 @@ public class CardManager {
         }
     }
     
-    
     public void drawAll(Graphics2D g2, SizeObj screenSize, List<UserObj> users) {
         this.users = users;
         for (UserObj user : users) {

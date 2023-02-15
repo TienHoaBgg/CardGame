@@ -26,12 +26,28 @@ public class UserManager {
     }
     
     public void addUser(String userId, String userName) {
+        if (validateUser(userId)) { return; }
         UserObj userObj = new UserObj(userId, userName);
         userObj.setImg(Utils.getInstance().getImage("person_icon.png"));
         userObj.setSize(200, 250);
-        users.add(userObj);
+        if (userId.equals(CurrentSessionUtils.USER_ID)) {
+            users.add(0, userObj);
+        } else {
+            users.add(userObj);
+        }
     }
 
+    private boolean validateUser(String userId) {
+        boolean isExists = false;
+        for (UserObj user : users) {
+            if (user.getUserId().equals(userId)) {
+                isExists = true;
+                break;
+            }
+        }
+        return isExists;
+    }
+    
     public void drawAll(Graphics2D g2, SizeObj screenSize) {
         SizeObj objSize = caculatorSize(screenSize);
         if (!users.isEmpty()) {
@@ -230,7 +246,6 @@ public class UserManager {
     private SizeObj caculatorSize(SizeObj size) {
         float height = size.getHeight()/10;
         float width = (int) (height*0.8);
-        
         return new SizeObj(width, height);
     }
 

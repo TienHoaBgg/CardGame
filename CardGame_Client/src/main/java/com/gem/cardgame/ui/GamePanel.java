@@ -12,7 +12,6 @@ import com.gem.cardgame.obj.SizeObj;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 /**
@@ -35,8 +34,6 @@ public class GamePanel extends JPanel implements CardCallBack {
         userManager = new UserManager();
         cardManager = new CardManager();
         cardManager.setCallBack(this);
-        userManager.addUser("sss", "User Random");
-        
     }
     
     private void initPNButton() {
@@ -83,14 +80,6 @@ public class GamePanel extends JPanel implements CardCallBack {
     private void updateU(SizeObj screenSize) {
         pnButtons.setBounds((int)screenSize.getWidth() - 206, (int)screenSize.getHeight() - 76, 206, 76);
         pnButtons.updateView();
-//        pnButtons.revalidate();
-//        pnButtons.setBorderPainted(false);
-//        pnButtons.setContentAreaFilled(false);
-        
-    }
-    
-    public void addUser(String userId, String userName) {
-        userManager.addUser(userId, userName);
     }
     
     public void startCard() {

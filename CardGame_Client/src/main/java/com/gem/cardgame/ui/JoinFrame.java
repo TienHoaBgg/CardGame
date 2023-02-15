@@ -7,6 +7,7 @@ package com.gem.cardgame.ui;
 import com.gem.cardgame.CurrentSessionUtils;
 import com.gem.cardgame.SocketManager;
 import com.gem.cardgame.Utils;
+import java.awt.event.KeyEvent;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.TemporalField;
@@ -25,11 +26,11 @@ public class JoinFrame extends javax.swing.JFrame {
         initComponents();
     }
     
-    private void connectToServer() {
+    private void connectToServer(String ipString) {
         if (SocketManager.getInstance().isConnected()) {
             pushToMain();
         } else {
-            SocketManager.getInstance().connect((SocketManager.ConnectStateEnum state1) -> {
+            SocketManager.getInstance().connect(ipString, (SocketManager.ConnectStateEnum state1) -> {
                 if (null == state1) {
                 } else {
                     switch (state1) {
@@ -50,7 +51,7 @@ public class JoinFrame extends javax.swing.JFrame {
     private void pushToMain() {
         new Thread(() -> {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
                 MainFrame mainFrame = new MainFrame();
                 mainFrame.setVisible(true);
                 mainFrame.validate();
@@ -62,6 +63,21 @@ public class JoinFrame extends javax.swing.JFrame {
         }).start();
     }
 
+    private void login() {
+        String userName = userNameTextFiel.getText();
+        String serverIP = txtServerIP.getText();
+        if (userName.equals("")) {
+            JOptionPane.showMessageDialog(null, "Nhập tên vào để còn biết ai mà tính nợ anh ơi :))");
+        } else if (serverIP.equals("")) {
+            JOptionPane.showMessageDialog(null, "Cần IP để connect để server...");
+        }else {
+            String userId = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() + "";
+            CurrentSessionUtils.USER_NAME = userName;
+            CurrentSessionUtils.USER_ID = userId;
+            connectToServer(serverIP);
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -75,6 +91,8 @@ public class JoinFrame extends javax.swing.JFrame {
         userNameTextFiel = new javax.swing.JTextField();
         btnJoin = new javax.swing.JButton();
         txtStatus = new javax.swing.JLabel();
+        txtServerIP = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -83,6 +101,11 @@ public class JoinFrame extends javax.swing.JFrame {
 
         userNameTextFiel.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
         userNameTextFiel.setSize(new java.awt.Dimension(78, 35));
+        userNameTextFiel.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                userNameTextFielKeyPressed(evt);
+            }
+        });
 
         btnJoin.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
         btnJoin.setText("JOIN");
@@ -95,30 +118,45 @@ public class JoinFrame extends javax.swing.JFrame {
         txtStatus.setFont(new java.awt.Font("Helvetica Neue", 2, 12)); // NOI18N
         txtStatus.setForeground(new java.awt.Color(0, 153, 0));
         txtStatus.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        txtStatus.setText("Connecting to server...");
+        txtStatus.setText("  ");
+
+        txtServerIP.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
+        txtServerIP.setText("127.0.0.1");
+        txtServerIP.setSize(new java.awt.Dimension(78, 35));
+
+        jLabel2.setText("IP Server: ");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(46, 46, 46)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(userNameTextFiel, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(37, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnJoin, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(107, 107, 107))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(46, 46, 46)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtServerIP, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(txtStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(jLabel1)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(userNameTextFiel, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(37, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(57, 57, 57)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(37, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(txtServerIP, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(userNameTextFiel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -126,7 +164,7 @@ public class JoinFrame extends javax.swing.JFrame {
                 .addComponent(txtStatus)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnJoin, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addGap(18, 18, 18))
         );
 
         pack();
@@ -134,16 +172,14 @@ public class JoinFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnJoinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJoinActionPerformed
-        String userName = userNameTextFiel.getText();
-        if (userName.equals("")) {
-            JOptionPane.showMessageDialog(null, "Nhập tên vào để còn biết ai mà tính nợ anh ơi :))");
-        } else {
-            String userId = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() + "";
-            CurrentSessionUtils.USER_NAME = userName;
-            CurrentSessionUtils.USER_ID = userId;
-            connectToServer();
-        }
+        login();
     }//GEN-LAST:event_btnJoinActionPerformed
+
+    private void userNameTextFielKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_userNameTextFielKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            login();
+        }
+    }//GEN-LAST:event_userNameTextFielKeyPressed
 
     /**
      * @param args the command line arguments
@@ -183,6 +219,8 @@ public class JoinFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnJoin;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JTextField txtServerIP;
     private javax.swing.JLabel txtStatus;
     private javax.swing.JTextField userNameTextFiel;
     // End of variables declaration//GEN-END:variables

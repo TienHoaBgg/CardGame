@@ -10,8 +10,6 @@ package com.gem.cardgame;
  */
 public class Constants {
     
-    public static final String URL_SOCKET = "http://127.0.0.1:3868";
-    
     
     
 }

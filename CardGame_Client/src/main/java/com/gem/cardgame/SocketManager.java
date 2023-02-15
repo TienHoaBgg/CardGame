@@ -43,9 +43,9 @@ public class SocketManager {
         return false;
     }
     
-    public void connect(IConnectCallback callback) {
+    public void connect(String ipString, IConnectCallback callback) {
         try {
-            socket = IO.socket(Constants.URL_SOCKET);
+            socket = IO.socket("http://" + ipString + ":3868");
             socket.on(Socket.EVENT_CONNECT, (Object... args) -> {
                 System.out.println("Socket begin Connect...");
                 String userId = CurrentSessionUtils.USER_ID;
