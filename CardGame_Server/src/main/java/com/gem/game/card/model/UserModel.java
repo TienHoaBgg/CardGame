@@ -3,19 +3,29 @@ package com.gem.game.card.model;
 import com.corundumstudio.socketio.SocketIOClient;
 
 public class UserModel {
+    private int index;
     private String userID;
     private String userName;
     private SocketIOClient socketIOClient;
 
-    public UserModel(String userID, String userName) {
+    public UserModel(int index, String userID, String userName) {
         this.userID = userID;
         this.userName = userName;
     }
 
-    public UserModel(UserEventModel userEventModel, SocketIOClient socketIOClient) {
+    public UserModel(int index, UserEventModel userEventModel, SocketIOClient socketIOClient) {
+        this.index = index;
         this.userID = userEventModel.getUserID();
         this.userName = userEventModel.getUserName();
         this.socketIOClient = socketIOClient;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public String getUserID() {
@@ -43,7 +53,7 @@ public class UserModel {
     }
 
     public UserEventModel toUserEvent() {
-        return new UserEventModel(this.userID, this.userName);
+        return new UserEventModel(this.index, this.userID, this.userName);
     }
 
 }

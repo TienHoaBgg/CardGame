@@ -60,6 +60,9 @@ public class SocketManager {
             }).on(Socket.EVENT_DISCONNECT, (Object... args) -> {
                 System.out.println("Socket Disconnected");
                 callback.connectState(ConnectStateEnum.DISCONNECTED);
+            }).on("MAX_CONNECTED", (Object... args) -> {
+                callback.maxUserConnect();
+                disconnect();
             });
             socket.connect();
         } catch (URISyntaxException ex) {
@@ -78,6 +81,7 @@ public class SocketManager {
     
     public interface IConnectCallback {
         void connectState(ConnectStateEnum state);
+        void maxUserConnect();
     }
     
 }

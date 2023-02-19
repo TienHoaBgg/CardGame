@@ -4,6 +4,7 @@
  */
 package com.gem.cardgame.obj;
 
+import com.gem.cardgame.objenum.CardType;
 import java.awt.Image;
 
 /**

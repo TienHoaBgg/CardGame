@@ -30,10 +30,10 @@ public class JoinFrame extends javax.swing.JFrame {
         if (SocketManager.getInstance().isConnected()) {
             pushToMain();
         } else {
-            SocketManager.getInstance().connect(ipString, (SocketManager.ConnectStateEnum state1) -> {
-                if (null == state1) {
-                } else {
-                    switch (state1) {
+            SocketManager.getInstance().connect(ipString, new SocketManager.IConnectCallback() {
+                @Override
+                public void connectState(SocketManager.ConnectStateEnum state) {
+                    switch (state) {
                         case CONNECTING ->
                             txtStatus.setText("Connecting to server...");
                         case DISCONNECTED ->
@@ -43,6 +43,11 @@ public class JoinFrame extends javax.swing.JFrame {
                             pushToMain();
                         }
                     }
+                }
+
+                @Override
+                public void maxUserConnect() {
+                    JOptionPane.showConfirmDialog(null, "Số lượng người chơi đã đạt giới hạn!");
                 }
             });
         }

@@ -2,8 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.gem.cardgame.obj;
+package com.gem.cardgame.model;
 
+import com.gem.cardgame.obj.CardObj;
+import com.gem.cardgame.obj.Obj2D;
+import com.gem.cardgame.obj.PositionObj;
+import com.gem.cardgame.objenum.PositionEnum;
+import com.gem.cardgame.objenum.UserStatusEnum;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -14,19 +19,27 @@ import java.util.List;
  *
  * @author gem
  */
-public class UserObj extends Obj2D {
+public class UserModel extends Obj2D {
     private String userId;
     private String userName;
     private int price;
-    private boolean isRoot;
+    private UserStatusEnum status;
+    
+    
     private PositionEnum positionEnum;
     private List<CardObj> cards;
     private boolean cardOpen;
     private PositionObj cardPosition;
 
-    public UserObj(String userId, String userName) {
+    public UserModel(String userId, String userName) {
         this.userId = userId;
         this.userName = userName;
+        cards = new ArrayList<>();
+    }
+
+    public UserModel(UserEventModel eventModel) {
+        this.userId = eventModel.getUserID();
+        this.userName = eventModel.getUserName();
         cards = new ArrayList<>();
     }
     
@@ -46,12 +59,12 @@ public class UserObj extends Obj2D {
         this.userName = userName;
     }
 
-    public boolean isIsRoot() {
-        return isRoot;
+    public UserStatusEnum getStatus() {
+        return status;
     }
 
-    public void setIsRoot(boolean isRoot) {
-        this.isRoot = isRoot;
+    public void setStatus(UserStatusEnum status) {
+        this.status = status;
     }
     
     public int getPrice() {
@@ -102,13 +115,26 @@ public class UserObj extends Obj2D {
         int widthName = g2.getFontMetrics().stringWidth(userName);
         float nameX = (x + width/2) - (widthName/2);
         g2.drawString(userName, nameX, y);
-        
-        String priceStr = price + "K";
-        int widthPrice = g2.getFontMetrics().stringWidth(priceStr);
-        g2.setFont(new Font("Helvetica Neue", Font.BOLD, 16));
+        String statusString = "";
+        switch (status) {
+            case READY -> {
+                statusString = "";
+            }
+            case TO -> {
+                statusString = "ĐÃ Tố";
+            }
+            case THEO -> {
+                statusString = "THEO";
+            }
+            case BO -> {
+                statusString = "ĐÃ BỎ";
+            }
+        }
+        int widthPrice = g2.getFontMetrics().stringWidth(statusString);
+        g2.setFont(new Font("Helvetica Neue", Font.BOLD | Font.ITALIC, 18));
         g2.setColor(Color.ORANGE);
         float priceX = (x + width/2) - (widthPrice/2);
-        g2.drawString(priceStr, priceX, y + height + 12);
+        g2.drawString(statusString, priceX, y + height + 12);
     }
     
 }

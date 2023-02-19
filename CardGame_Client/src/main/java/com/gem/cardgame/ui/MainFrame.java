@@ -6,14 +6,13 @@ package com.gem.cardgame.ui;
 
 import com.gem.cardgame.CurrentSessionUtils;
 import com.gem.cardgame.SocketManager;
-import com.gem.cardgame.Utils;
-import com.gem.cardgame.obj.ChatEventModel;
-import com.gem.cardgame.obj.UserEventModel;
+import com.gem.cardgame.model.ChatEventModel;
+import com.gem.cardgame.model.UserEventModel;
+import com.gem.cardgame.model.UserModel;
 import com.gem.cardgame.ui.GamePanel;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.socket.client.Socket;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.util.List;
@@ -21,7 +20,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
-import java.lang.reflect.Type;
+import javax.swing.table.DefaultTableModel;
 
 
 /**
@@ -67,21 +66,27 @@ public class MainFrame extends javax.swing.JFrame {
         socket.on("CURRENT_PLAYERS", (args) -> {
             String json = args[0].toString();
             List<UserEventModel> currentPlayes = gson.fromJson(json, new TypeToken<List<UserEventModel>>() {}.getType());
-            for (UserEventModel currentPlaye : currentPlayes) {
-                gameView.userManager.addUser(currentPlaye.getUserID(), currentPlaye.getUserName());
-                repaint();
-            }
-        });
-        
-        socket.on("JOIN_GAME_EVENT", (args) -> {
-            String json = args[0].toString();
-            UserEventModel userJoin = gson.fromJson(json, UserEventModel.class);
-            gameView.userManager.addUser(userJoin.getUserID(), userJoin.getUserName());
+            gameView.userManager.setUsers(currentPlayes);
             repaint();
+            updateCurrentUser();
         });
-        
     }
-
+ 
+    private void updateCurrentUser() {
+        List<UserModel> users = gameView.userManager.getUserInfo();
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        model.setRowCount(0);
+        if (!users.isEmpty()) {
+            Object[] row = new Object[3];
+            for(int i = 0; i < users.size(); i ++) {
+                row[0] = i + 1;
+                row[1] = users.get(i).getUserName();
+                row[2] = users.get(i).getPrice();
+                model.addRow(row);
+            }
+        }
+    }
+    
     private synchronized void appendToLogger(String msg, Color c) {
         java.awt.EventQueue.invokeLater(() -> {
             StyleContext sc = StyleContext.getDefaultStyleContext();
@@ -148,12 +153,10 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
+        jTable1.setFont(new java.awt.Font("Helvetica Neue", 1, 14)); // NOI18N
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+
             },
             new String [] {
                 "STT", "Tên", "Lãi/Lỗ"
@@ -167,6 +170,8 @@ public class MainFrame extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        jTable1.setRowHeight(30);
+        jTable1.setRowSelectionAllowed(false);
         jScrollPane2.setViewportView(jTable1);
         if (jTable1.getColumnModel().getColumnCount() > 0) {
             jTable1.getColumnModel().getColumn(0).setMaxWidth(40);

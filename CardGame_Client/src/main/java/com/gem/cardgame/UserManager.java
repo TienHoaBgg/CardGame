@@ -4,13 +4,18 @@
  */
 package com.gem.cardgame;
 
-import com.gem.cardgame.obj.PositionEnum;
+import com.gem.cardgame.objenum.PositionEnum;
 import com.gem.cardgame.obj.PositionObj;
 import com.gem.cardgame.obj.SizeObj;
-import com.gem.cardgame.obj.UserObj;
+import com.gem.cardgame.model.UserEventModel;
+import com.gem.cardgame.model.UserModel;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
+import static java.util.stream.Collectors.toList;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -18,166 +23,206 @@ import java.util.List;
  */
 public class UserManager {
 
-    public List<UserObj> users;
+    private final HashMap<Integer, UserModel> usersMap;
+    private final List<UserModel> users;
 
     public UserManager() {
+        usersMap = new HashMap<>();
         users = new ArrayList<>();
-
     }
     
-    public void addUser(String userId, String userName) {
-        if (validateUser(userId)) { return; }
-        UserObj userObj = new UserObj(userId, userName);
-        userObj.setImg(Utils.getInstance().getImage("person_icon.png"));
-        userObj.setSize(200, 250);
-        if (userId.equals(CurrentSessionUtils.USER_ID)) {
-            users.add(0, userObj);
+    public List<UserModel> getUserInfo() {
+        return users;
+    }
+    
+    public List<UserModel> getUsers() {
+        return usersMap.values().stream().collect(toList());
+    }
+    
+    public UserModel getMyInfo() {
+        return usersMap.get(0);
+    }
+    
+    public void setUsers(List<UserEventModel> userEventModels) {
+        usersMap.clear();
+        Optional<UserEventModel> currentUser = userEventModels.stream().filter(user -> user.getUserID().equals(CurrentSessionUtils.USER_ID)).findFirst();
+        int currentUserIndex = validateUser(currentUser.get().getUserID());
+        if (currentUserIndex == -1) {
+            users.add(convertToUser(currentUser.get()));
+        }
+        if (currentUser.isPresent()) {
+            int userIndex = currentUser.get().getIndex();
+            usersMap.put(0, convertToUser(currentUser.get()));
+            int maxIndex = 0;
+            for (int i = userIndex + 1; i < userEventModels.size(); i++) {
+                maxIndex = i - userIndex;
+                UserModel user = convertToUser(userEventModels.get(i));
+                usersMap.put(maxIndex, user);
+                if (validateUser(user.getUserId()) == -1) {
+                    users.add(user);
+                }
+            }
+            for (int i = 0; i < userIndex; i++) {
+                int index = i + maxIndex + 1;
+                UserModel user = convertToUser(userEventModels.get(i));
+                usersMap.put(index, user);
+                if (validateUser(user.getUserId()) == -1) {
+                    users.add(user);
+                }
+            }
         } else {
-            users.add(userObj);
+            JOptionPane.showConfirmDialog(null, "Có lỗi xảy ra!!! Vui lòng thoát ra vào lại.");
         }
     }
-
-    private boolean validateUser(String userId) {
-        boolean isExists = false;
-        for (UserObj user : users) {
-            if (user.getUserId().equals(userId)) {
-                isExists = true;
+    
+    private UserModel convertToUser(UserEventModel userEventModel) {
+        UserModel userObj = new UserModel(userEventModel);
+        userObj.setImg(Utils.getInstance().getImage("person_icon.png"));
+        userObj.setSize(200, 250);
+        return userObj;
+    }
+    
+    private int validateUser(String userId) {
+        int index = -1;
+        for (int i = 0; i < users.size(); i ++) {
+            UserModel user = users.get(i);
+            if (user.getUserId() == null ? userId == null : user.getUserId().equals(userId)) {
+                index = i;
                 break;
             }
         }
-        return isExists;
+        return index;
     }
     
     public void drawAll(Graphics2D g2, SizeObj screenSize) {
         SizeObj objSize = caculatorSize(screenSize);
-        if (!users.isEmpty()) {
-            UserObj obj = users.get(0);
+        if (!usersMap.isEmpty()) {
+            UserModel obj = usersMap.get(0);
             obj.setPositionEnum(PositionEnum.BOTTOM);
             drawUser(g2, obj, objSize, bottomCenterPosition(screenSize, objSize));
         }
-        switch (users.size()) {
+        switch (usersMap.size()) {
             case 2 ->  {
-                UserObj obj = users.get(1);
+                UserModel obj = usersMap.get(1);
                 obj.setPositionEnum(PositionEnum.TOP);
                 drawUser(g2, obj, objSize, topCenterPosition(screenSize, objSize));
             }
             case 3 ->  {
-                UserObj obj = users.get(1);
+                UserModel obj = usersMap.get(1);
                 obj.setPositionEnum(PositionEnum.TOPRIGHT);
                 drawUser(g2, obj, objSize, rightTopPosition(screenSize, objSize));
-                UserObj obj2 = users.get(2);
+                UserModel obj2 = usersMap.get(2);
                 obj2.setPositionEnum(PositionEnum.TOPLEFT);
                 drawUser(g2, obj2, objSize, leftTopPosition(objSize));
             }
             case 4 ->  {
-                UserObj obj = users.get(1);
+                UserModel obj = usersMap.get(1);
                 obj.setPositionEnum(PositionEnum.RIGHT);
                 drawUser(g2, obj, objSize, rightCenterPosition(screenSize, objSize));
-                UserObj obj1 = users.get(2);
+                UserModel obj1 = usersMap.get(2);
                 obj1.setPositionEnum(PositionEnum.TOP);
                 drawUser(g2, obj1, objSize, topCenterPosition(screenSize, objSize));
-                UserObj obj2 = users.get(3);
+                UserModel obj2 = usersMap.get(3);
                 obj2.setPositionEnum(PositionEnum.LEFT);
                 drawUser(g2, obj2, objSize, leftCenterPosition(screenSize, objSize));
             }
             case 5 ->  {
-                UserObj obj = users.get(1);
+                UserModel obj = usersMap.get(1);
                 obj.setPositionEnum(PositionEnum.BOTTOMRIGHT);
                 drawUser(g2, obj, objSize, rightBottomPosition(screenSize, objSize));
                 
-                UserObj obj1 = users.get(2);
+                UserModel obj1 = usersMap.get(2);
                 obj1.setPositionEnum(PositionEnum.TOPRIGHT);
                 drawUser(g2, obj1, objSize, rightTopPosition(screenSize, objSize));
                 
-                UserObj obj2 = users.get(3);
+                UserModel obj2 = usersMap.get(3);
                 obj2.setPositionEnum(PositionEnum.TOP);
                 drawUser(g2, obj2, objSize, topCenterPosition(screenSize, objSize));
                 
-                UserObj obj3 = users.get(4);
+                UserModel obj3 = usersMap.get(4);
                 obj3.setPositionEnum(PositionEnum.LEFT);
                 drawUser(g2, obj3, objSize, leftCenterPosition(screenSize, objSize));
             }
             case 6 ->  {
-                UserObj obj = users.get(1);
+                UserModel obj = usersMap.get(1);
                 obj.setPositionEnum(PositionEnum.BOTTOMRIGHT);
                 drawUser(g2, obj, objSize, rightBottomPosition(screenSize, objSize));
                 
-                UserObj obj1 = users.get(2);
+                UserModel obj1 = usersMap.get(2);
                 obj1.setPositionEnum(PositionEnum.TOPRIGHT);
                 drawUser(g2, obj1, objSize, rightTopPosition(screenSize, objSize));
                 
-                UserObj obj2 = users.get(3);
+                UserModel obj2 = usersMap.get(3);
                 obj2.setPositionEnum(PositionEnum.TOP);
                 drawUser(g2, obj2, objSize, topCenterPosition(screenSize, objSize));
                 
-                UserObj obj3 = users.get(4);
+                UserModel obj3 = usersMap.get(4);
                 obj3.setPositionEnum(PositionEnum.TOPLEFT);
                 drawUser(g2, obj3, objSize, leftTopPosition(objSize));
                 
-                UserObj obj4 = users.get(5);
+                UserModel obj4 = usersMap.get(5);
                 obj4.setPositionEnum(PositionEnum.BOTTOMLEFT);
                 drawUser(g2, obj4, objSize, leftBottomPosition(screenSize, objSize));
                 
             }
             case 7 ->  {
-                UserObj obj = users.get(1);
+                UserModel obj = usersMap.get(1);
                 obj.setPositionEnum(PositionEnum.BOTTOMRIGHT);
                 drawUser(g2, obj, objSize, rightBottomPosition(screenSize, objSize));
                 
-                UserObj obj1 = users.get(2);
+                UserModel obj1 = usersMap.get(2);
                 obj1.setPositionEnum(PositionEnum.RIGHT);
                 drawUser(g2, obj1, objSize, rightCenterPosition(screenSize, objSize));
                 
-                UserObj obj2 = users.get(3);
+                UserModel obj2 = usersMap.get(3);
                 obj2.setPositionEnum(PositionEnum.TOPRIGHT);
                 drawUser(g2, obj2, objSize, rightTopPosition(screenSize, objSize));
                 
-                UserObj obj3 = users.get(4);
+                UserModel obj3 = usersMap.get(4);
                 obj3.setPositionEnum(PositionEnum.TOP);
                 drawUser(g2, obj3, objSize, topCenterPosition(screenSize, objSize));
                 
-                UserObj obj4 = users.get(5);
+                UserModel obj4 = usersMap.get(5);
                 obj4.setPositionEnum(PositionEnum.TOPLEFT);
                 drawUser(g2, obj4, objSize, leftTopPosition(objSize));
                 
-                UserObj obj5 = users.get(6);
+                UserModel obj5 = usersMap.get(6);
                 obj5.setPositionEnum(PositionEnum.BOTTOMLEFT);
                 drawUser(g2, obj5, objSize, leftBottomPosition(screenSize, objSize));
 
             }
             case 8 ->  {
-                UserObj obj = users.get(1);
+                UserModel obj = usersMap.get(1);
                 obj.setPositionEnum(PositionEnum.BOTTOMRIGHT);
                 drawUser(g2, obj, objSize, rightBottomPosition(screenSize, objSize));
                 
-                UserObj obj1 = users.get(2);
+                UserModel obj1 = usersMap.get(2);
                 obj1.setPositionEnum(PositionEnum.RIGHT);
                 drawUser(g2, obj1, objSize, rightCenterPosition(screenSize, objSize));
                 
-                UserObj obj2 = users.get(3);
+                UserModel obj2 = usersMap.get(3);
                 obj2.setPositionEnum(PositionEnum.TOPRIGHT);
                 drawUser(g2, obj2, objSize, rightTopPosition(screenSize, objSize));
                 
-                UserObj obj3 = users.get(4);
+                UserModel obj3 = usersMap.get(4);
                 obj3.setPositionEnum(PositionEnum.TOP);
                 drawUser(g2, obj3, objSize, topCenterPosition(screenSize, objSize));
                 
-                UserObj obj4 = users.get(5);
+                UserModel obj4 = usersMap.get(5);
                 obj4.setPositionEnum(PositionEnum.TOPLEFT);
                 drawUser(g2, obj4, objSize, leftTopPosition(objSize));
                 
-                UserObj obj5 = users.get(6);
+                UserModel obj5 = usersMap.get(6);
                 obj5.setPositionEnum(PositionEnum.LEFT);
                 drawUser(g2, obj5, objSize, leftCenterPosition(screenSize, objSize));
                 
-                UserObj obj6 = users.get(7);
+                UserModel obj6 = usersMap.get(7);
                 obj6.setPositionEnum(PositionEnum.BOTTOMLEFT);
                 drawUser(g2, obj6, objSize, leftBottomPosition(screenSize, objSize));
             }
             default -> {
             }
         }
-        
     }
     
     // bottom center
@@ -236,7 +281,7 @@ public class UserManager {
         return new PositionObj(x, y);
     }
     
-    private void drawUser(Graphics2D g2, UserObj user, SizeObj objSize, PositionObj position) {
+    private void drawUser(Graphics2D g2, UserModel user, SizeObj objSize, PositionObj position) {
         user.setPosition(position);
         user.setSize(objSize);
         user.draw(g2);

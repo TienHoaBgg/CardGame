@@ -107,7 +107,7 @@ public class GamePanel extends JPanel implements CardCallBack {
         // background image
         graphics2D.drawImage(bgImage, 0, 0, this.getWidth(), this.getHeight(), null);
         userManager.drawAll(graphics2D, screenSize);
-        cardManager.drawAll(graphics2D, screenSize, userManager.users);
+        cardManager.drawAll(graphics2D, screenSize, userManager.getUsers());
         updateU(screenSize);
     }
 

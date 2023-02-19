@@ -5,10 +5,10 @@
 package com.gem.cardgame;
 
 import com.gem.cardgame.obj.CardObj;
-import com.gem.cardgame.obj.CardType;
+import com.gem.cardgame.objenum.CardType;
 import com.gem.cardgame.obj.PositionObj;
 import com.gem.cardgame.obj.SizeObj;
-import com.gem.cardgame.obj.UserObj;
+import com.gem.cardgame.model.UserModel;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ import java.util.List;
 public class CardManager {
     
     private List<CardObj> cards;
-    private List<UserObj> users;
+    private List<UserModel> users;
     private float xStart;
     private float yStart;
     private CardObj blackCard;
@@ -65,7 +65,7 @@ public class CardManager {
     }
     
     public void cardAnimation() {
-        UserObj userObj = users.get(currentIndex);
+        UserModel userObj = users.get(currentIndex);
         float userCardX = userObj.getCardPosition().getX();
         float userCardY = userObj.getCardPosition().getY();
         float spaceX;
@@ -95,9 +95,10 @@ public class CardManager {
         }
     }
     
-    public void drawAll(Graphics2D g2, SizeObj screenSize, List<UserObj> users) {
+    public void drawAll(Graphics2D g2, SizeObj screenSize, List<UserModel> users) {
         this.users = users;
-        for (UserObj user : users) {
+        for (UserModel user : users) {
+            int cardCount = user.getCards().size();
             switch (user.getPositionEnum()) {
                 case BOTTOM -> {
                     float width = screenSize.getWidth()/10;
@@ -106,12 +107,12 @@ public class CardManager {
                     float yCard = screenSize.getHeight() - height;
                     user.setCardPosition(new PositionObj(xCenter - width/2, yCard));
                     if (user.isCardOpen()) {
-                        float widthCards = 3 * (width*2/3);
+                        float widthCards = cardCount * (width*2/3);
                         xCenter -= widthCards/2;
                     } else {
                         xCenter -= width/2;
                     }
-                    for (int i = 0; i < 3; i++) {
+                    for (int i = 0; i < cardCount; i++) {
                         CardObj card = cards.get(i);
                         card.setSize(width, height);
                         if (user.isCardOpen()) {
@@ -131,12 +132,12 @@ public class CardManager {
                     float yCard = user.getY() + user.getHeight() + 24;
                     user.setCardPosition(new PositionObj(xCenter - width/2, yCard));
                     if (user.isCardOpen()) {
-                        float widthCards = 3 * (width*2/3);
+                        float widthCards = cardCount * (width*2/3);
                         xCenter -= widthCards/2;
                     } else {
                         xCenter -= width/2;
                     }
-                    for (int i = 0; i < 3; i++) {
+                    for (int i = 0; i < cardCount; i++) {
                         CardObj card = cards.get(i);
                         card.setSize(width, height);
                         if (user.isCardOpen()) {
@@ -155,13 +156,13 @@ public class CardManager {
                     float xCard = user.getX() + user.getWidth() + 20;
                     float yCard = user.getY();
                     user.setCardPosition(new PositionObj(xCard, yCard));
-                    for (int i = 0; i < 3; i++) {
+                    for (int i = 0; i < cardCount; i++) {
                         CardObj card = cards.get(i);
                         card.setSize(width, height);
                         if (user.isCardOpen()) {
                             card.setPosition(xCard, yCard);
                             card.draw(g2);
-                            xCard += width*2/3;
+                            xCard += width*2/cardCount;
                         } else {
                             card.setPosition(xCard, yCard);
                             card.draw(g2);
@@ -176,19 +177,19 @@ public class CardManager {
                     user.setCardPosition(new PositionObj(xCard, yCard));
                     
                     if (user.isCardOpen()) {
-                        float widthCards = 2 * (width*2/3) + width;
+                        float widthCards = 2 * (width*2/cardCount) + width;
                         xCard -= widthCards;
                     } else {
                         xCard -= width;
                     }
                     
-                    for (int i = 0; i < 3; i++) {
+                    for (int i = 0; i < cardCount; i++) {
                         CardObj card = cards.get(i);
                         card.setSize(width, height);
                         if (user.isCardOpen()) {
                             card.setPosition(xCard, yCard);
                             card.draw(g2);
-                            xCard += width*2/3;
+                            xCard += width*2/cardCount;
                         } else {
                             card.setPosition(xCard, yCard);
                             card.draw(g2);
