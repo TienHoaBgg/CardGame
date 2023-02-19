@@ -22,6 +22,7 @@ public class ButtonsPanel extends javax.swing.JPanel {
 
     public void updateView() {
         this.getLayout().layoutContainer(this);
+        jPanel1.getLayout().layoutContainer(jPanel1);
     }
     
     public void setCallBack(IButtonCallBack callBack) {
@@ -37,24 +38,16 @@ public class ButtonsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        btnTheo = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
         btnTo = new javax.swing.JButton();
-        btnNan = new javax.swing.JButton();
+        btnTheo = new javax.swing.JButton();
         btnBo = new javax.swing.JButton();
 
         setOpaque(false);
-        setLayout(new java.awt.GridLayout(2, 2, 2, 2));
+        setLayout(new java.awt.GridLayout(2, 1, 2, 2));
 
-        btnTheo.setBackground(new java.awt.Color(0, 135, 248));
-        btnTheo.setFont(new java.awt.Font("Monospaced", 1, 14)); // NOI18N
-        btnTheo.setForeground(new java.awt.Color(255, 255, 255));
-        btnTheo.setText("Theo");
-        btnTheo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnTheoActionPerformed(evt);
-            }
-        });
-        add(btnTheo);
+        jPanel1.setOpaque(false);
+        jPanel1.setLayout(new java.awt.GridLayout(1, 2, 2, 2));
 
         btnTo.setBackground(new java.awt.Color(229, 150, 52));
         btnTo.setFont(new java.awt.Font("Monospaced", 1, 14)); // NOI18N
@@ -65,24 +58,20 @@ public class ButtonsPanel extends javax.swing.JPanel {
                 btnToActionPerformed(evt);
             }
         });
-        add(btnTo);
+        jPanel1.add(btnTo);
 
-        btnNan.setBackground(new java.awt.Color(223, 40, 42));
-        btnNan.setFont(new java.awt.Font("Monospaced", 1, 14)); // NOI18N
-        btnNan.setForeground(new java.awt.Color(255, 255, 255));
-        btnNan.setText("Nặn Bài");
-        btnNan.setToolTipText("Click để xem bài, nhấn giữ để nặn bài");
-        btnNan.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                btnNanMousePressed(evt);
-            }
-        });
-        btnNan.addActionListener(new java.awt.event.ActionListener() {
+        btnTheo.setBackground(new java.awt.Color(0, 135, 248));
+        btnTheo.setFont(new java.awt.Font("Monospaced", 1, 14)); // NOI18N
+        btnTheo.setForeground(new java.awt.Color(255, 255, 255));
+        btnTheo.setText("Theo");
+        btnTheo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnNanActionPerformed(evt);
+                btnTheoActionPerformed(evt);
             }
         });
-        add(btnNan);
+        jPanel1.add(btnTheo);
+
+        add(jPanel1);
 
         btnBo.setBackground(new java.awt.Color(102, 102, 102));
         btnBo.setFont(new java.awt.Font("Monospaced", 0, 14)); // NOI18N
@@ -104,14 +93,6 @@ public class ButtonsPanel extends javax.swing.JPanel {
         callBack.toClickAction();
     }//GEN-LAST:event_btnToActionPerformed
 
-    private void btnNanMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnNanMousePressed
-        callBack.nanPressAction();
-    }//GEN-LAST:event_btnNanMousePressed
-
-    private void btnNanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNanActionPerformed
-        callBack.nanClickAction();
-    }//GEN-LAST:event_btnNanActionPerformed
-
     private void btnBoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBoActionPerformed
         callBack.boClickAction();
     }//GEN-LAST:event_btnBoActionPerformed
@@ -119,16 +100,14 @@ public class ButtonsPanel extends javax.swing.JPanel {
     interface IButtonCallBack {
         void toClickAction();
         void theoClickAction();
-        void nanClickAction();
-        void nanPressAction();
         void boClickAction();
     }
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBo;
-    private javax.swing.JButton btnNan;
     private javax.swing.JButton btnTheo;
     private javax.swing.JButton btnTo;
+    private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 }

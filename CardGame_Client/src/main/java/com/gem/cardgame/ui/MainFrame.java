@@ -9,7 +9,6 @@ import com.gem.cardgame.SocketManager;
 import com.gem.cardgame.model.ChatEventModel;
 import com.gem.cardgame.model.UserEventModel;
 import com.gem.cardgame.model.UserModel;
-import com.gem.cardgame.ui.GamePanel;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.socket.client.Socket;
@@ -32,22 +31,17 @@ public class MainFrame extends javax.swing.JFrame {
     /**
      * Creates new form MainFrame
      */
-    private GamePanel gameView;
+    private final GamePanel gameView;
     private final Socket socket;
     private final Gson gson;
 
     public MainFrame() {
         initComponents();
-        setupGameBoard();
-        gson = new Gson();
         socket = SocketManager.getInstance().getSocket();
-        socketEventListener();
-    }
-
-    private void setupGameBoard() {
-        gameView = new GamePanel();
+        gameView = new GamePanel(socket);
         mainPanel.add(gameView);
-
+        gson = new Gson();
+        socketEventListener();
     }
 
     private void socketEventListener() {
@@ -70,6 +64,17 @@ public class MainFrame extends javax.swing.JFrame {
             repaint();
             updateCurrentUser();
         });
+        
+        socket.on("GAME_STARTED",  (args) -> {
+            gameView.gameStarted();
+        });
+        
+        socket.on("MY_CARD_EVENT", (args) -> {
+            String json = args[0].toString();
+            List<Integer> cardIds = gson.fromJson(json, new TypeToken<List<Integer>>() {}.getType());
+            gameView.cardManager.setCardToUser(cardIds, CurrentSessionUtils.USER_ID);
+        });
+        
     }
  
     private void updateCurrentUser() {

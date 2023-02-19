@@ -84,6 +84,9 @@ public class UserModel extends Obj2D {
     }
 
     public List<CardObj> getCards() {
+        if (cards == null) {
+            cards = new ArrayList<>();
+        }
         return cards;
     }
 
@@ -116,7 +119,8 @@ public class UserModel extends Obj2D {
         float nameX = (x + width/2) - (widthName/2);
         g2.drawString(userName, nameX, y);
         String statusString = "";
-        switch (status) {
+        if (status != null) {
+             switch (status) {
             case READY -> {
                 statusString = "";
             }
@@ -129,12 +133,14 @@ public class UserModel extends Obj2D {
             case BO -> {
                 statusString = "ĐÃ BỎ";
             }
+            case WINNER -> { statusString = "WINNER"; }
         }
         int widthPrice = g2.getFontMetrics().stringWidth(statusString);
         g2.setFont(new Font("Helvetica Neue", Font.BOLD | Font.ITALIC, 18));
         g2.setColor(Color.ORANGE);
         float priceX = (x + width/2) - (widthPrice/2);
         g2.drawString(statusString, priceX, y + height + 12);
+        }
     }
     
 }

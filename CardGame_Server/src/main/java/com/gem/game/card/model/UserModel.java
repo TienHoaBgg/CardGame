@@ -2,22 +2,22 @@ package com.gem.game.card.model;
 
 import com.corundumstudio.socketio.SocketIOClient;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserModel {
     private int index;
     private String userID;
     private String userName;
+    private List<Integer> cards;
     private SocketIOClient socketIOClient;
-
-    public UserModel(int index, String userID, String userName) {
-        this.userID = userID;
-        this.userName = userName;
-    }
 
     public UserModel(int index, UserEventModel userEventModel, SocketIOClient socketIOClient) {
         this.index = index;
         this.userID = userEventModel.getUserID();
         this.userName = userEventModel.getUserName();
         this.socketIOClient = socketIOClient;
+        this.cards = new ArrayList<>();
     }
 
     public int getIndex() {
@@ -42,6 +42,14 @@ public class UserModel {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public List<Integer> getCards() {
+        return cards;
+    }
+
+    public void setCards(List<Integer> cards) {
+        this.cards = cards;
     }
 
     public SocketIOClient getSocketIOClient() {

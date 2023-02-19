@@ -49,6 +49,12 @@ public class JoinFrame extends javax.swing.JFrame {
                 public void maxUserConnect() {
                     JOptionPane.showConfirmDialog(null, "Số lượng người chơi đã đạt giới hạn!");
                 }
+
+                @Override
+                public void gameRunning() {
+                    JOptionPane.showConfirmDialog(null, "Vui lòng đợi game kết thúc để tham gia.");
+                }
+                
             });
         }
     }

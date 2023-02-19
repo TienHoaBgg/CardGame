@@ -63,6 +63,9 @@ public class SocketManager {
             }).on("MAX_CONNECTED", (Object... args) -> {
                 callback.maxUserConnect();
                 disconnect();
+            }).on("GAME_RUNNING", (args) -> {
+                callback.gameRunning();
+                disconnect();
             });
             socket.connect();
         } catch (URISyntaxException ex) {
@@ -72,7 +75,8 @@ public class SocketManager {
     
     public void disconnect() {
         socket.disconnect();
-        
+        socket.close();
+        socket = null;
     }
     
     public enum ConnectStateEnum {
@@ -82,6 +86,7 @@ public class SocketManager {
     public interface IConnectCallback {
         void connectState(ConnectStateEnum state);
         void maxUserConnect();
+        void gameRunning();
     }
     
 }

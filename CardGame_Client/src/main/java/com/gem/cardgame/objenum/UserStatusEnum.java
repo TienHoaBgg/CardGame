@@ -9,5 +9,5 @@ package com.gem.cardgame.objenum;
  * @author nth
  */
 public enum UserStatusEnum {
-    THEO, TO, BO, READY
+    THEO, TO, BO, READY, WINNER
 }
