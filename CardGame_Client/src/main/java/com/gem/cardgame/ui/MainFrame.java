@@ -61,18 +61,32 @@ public class MainFrame extends javax.swing.JFrame {
             String json = args[0].toString();
             List<UserEventModel> currentPlayers = gson.fromJson(json, new TypeToken<List<UserEventModel>>() {}.getType());
             gameView.userManager.setUsers(currentPlayers);
+            
+            gameView.setVisiablePlayButton();
             repaint();
             updateCurrentUser();
         });
         
         socket.on("GAME_STARTED",  (args) -> {
+            String hostUserId = args[0].toString();
+            if (hostUserId == null ? CurrentSessionUtils.USER_ID == null : hostUserId.equals(CurrentSessionUtils.USER_ID)) {
+                CurrentSessionUtils.IS_HOST = true;
+                CurrentSessionUtils.IS_YOUR_TURN = true;
+            }
             gameView.gameStarted();
         });
         
         socket.on("MY_CARD_EVENT", (args) -> {
             String json = args[0].toString();
             List<Integer> cardIds = gson.fromJson(json, new TypeToken<List<Integer>>() {}.getType());
-            gameView.cardManager.setCardToUser(cardIds, CurrentSessionUtils.USER_ID);
+            gameView.cardManager.addMyCard(cardIds);
+        });
+        
+        
+        socket.on("TOTAL_AMOUNT_UPDATED", (args) -> {
+            String amountStr = args[0].toString();
+            int amount = Integer.parseInt(amountStr);
+            gameView.updateTotalAmount(amount);
         });
         
     }

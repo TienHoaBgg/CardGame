@@ -12,9 +12,8 @@ public class CurrentSessionUtils {
     
     public static String USER_ID;
     public static String USER_NAME;
-    
-    
-    
+    public static boolean IS_HOST;
+    public static boolean IS_YOUR_TURN;
     
     
     

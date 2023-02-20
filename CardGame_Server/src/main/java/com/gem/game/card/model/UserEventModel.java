@@ -6,11 +6,13 @@ public class UserEventModel {
     private int index;
     private String userID;
     private String userName;
+    private boolean isHost;
 
-    public UserEventModel(int index, String userID, String userName) {
+    public UserEventModel(int index, String userID, String userName, boolean isHost) {
         this.userID = userID;
         this.userName = userName;
         this.index = index;
+        this.isHost = isHost;
     }
 
     public int getIndex() {
@@ -19,6 +21,14 @@ public class UserEventModel {
 
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    public boolean isHost() {
+        return isHost;
+    }
+
+    public void setHost(boolean host) {
+        isHost = host;
     }
 
     public String getUserID() {

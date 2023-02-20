@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Controller
@@ -29,6 +30,8 @@ public class SocketManager {
 
     public static SocketIOServer socketIOServer;
     private boolean gameIsRunning = false;
+    private int totalAmount;
+    private UserModel hostUser;
 
     @Autowired
     private Gson gson;
@@ -78,9 +81,16 @@ public class SocketManager {
 
     // ======================== GAME EVENT ===============================
     private void startGame(SocketIOClient socketIOClient, String userId, AckRequest ackRequest) {
-        gameIsRunning = true;
+//        gameIsRunning = true;
         List<Integer> cards = new ArrayList<>();
         playerUsers = playerUsers.stream().sorted(Comparator.comparing(UserModel::getIndex)).collect(Collectors.toList());
+        playerUsers.forEach((userModel -> {
+            userModel.getCards().clear();
+            if (userModel.isHost()) {
+                hostUser = userModel;
+            }
+        }));
+
         for (int l = 0; l < 3; l ++) {
             for (UserModel playerUser : playerUsers) {
                 int cardRandom = random.nextInt(52);
@@ -91,12 +101,21 @@ public class SocketManager {
                 playerUser.getCards().add(cardRandom);
             }
         }
-        socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("GAME_STARTED");
+        socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("GAME_STARTED", hostUser.getUserID());
         // Bai cua thang nao thi gui cho thang day.
+        totalAmount = 0;
         for (UserModel playerUser : playerUsers) {
+            totalAmount += 10;
             Type listType = new TypeToken<List<Integer>>() {}.getType();
             playerUser.getSocketIOClient().sendEvent("MY_CARD_EVENT", gson.toJson(playerUser.getCards(), listType));
+
         }
+        String totalAmountStr = "" + totalAmount;
+        socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("TOTAL_AMOUNT_UPDATED", totalAmountStr);
+    }
+
+    private void followAction(SocketIOClient socketIOClient, String userId, AckRequest ackRequest) {
+
     }
 
 
@@ -106,6 +125,7 @@ public class SocketManager {
         socketIOClient.joinRoom(GAME_GROUP);
         if (playerUsers.size() < 8) {
             UserModel userModel = new UserModel(playerUsers.size(), model, socketIOClient);
+            userModel.setHost(playerUsers.size() == 0);
             playerUsers.add(userModel);
             LOG.info("Join game user " + socketIOClient.getRemoteAddress().toString() + " UserId: " + model.getUserID());
             pushCurrentPlayer(socketIOClient);
@@ -160,7 +180,9 @@ public class SocketManager {
             }
             playerUsers.remove(userDisconnect);
             LOG.info("User: " + userDisconnect.getUserName() + " thoát khỏi game.");
-            pushCurrentPlayer(socketIOClient);
+            if (!gameIsRunning) {
+                pushCurrentPlayer(socketIOClient);
+            }
         }
     }
 

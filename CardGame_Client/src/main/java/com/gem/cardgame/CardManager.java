@@ -22,13 +22,14 @@ public class CardManager {
 
     private List<CardObj> cards;
     private List<UserModel> users;
-    private float xStart;
-    private float yStart;
     private CardObj blackCard;
     private CardObj centerCard;
     private CardCallBack callBack;
     private int currentIndex;
     private boolean isAnimation;
+    private List<Integer> myCards;
+    
+    private int animationRepeatCount = 0;
 
     public CardManager() {
         init();
@@ -40,6 +41,7 @@ public class CardManager {
 
     private void init() {
         cards = new ArrayList<>();
+        myCards = new ArrayList<>();
         for (int i = 1; i < 14; i++) {
             Image roImage = Utils.getInstance().getImage("cards/Ro_" + i + ".png");
             Image coImage = Utils.getInstance().getImage("cards/Co_" + i + ".png");
@@ -64,9 +66,18 @@ public class CardManager {
         return new CardObj(0, CardType.UP, upImage);
     }
     
+    public void addMyCard(List<Integer> cardIds) {
+        if (isAnimation) {
+            myCards = cardIds;
+        } else {
+            setCardToUser(cardIds, CurrentSessionUtils.USER_ID);
+        }
+    }
+    
     public void setCardToUser(List<Integer> cardIds, String userId) {
         for(UserModel user : users) {
             if (user.getUserId().equals(userId)) {
+                user.getCards().clear();
                 for (Integer cardId : cardIds) {
                     if (cardId < cards.size()) {
                         user.getCards().add(cards.get(cardId));
@@ -77,11 +88,16 @@ public class CardManager {
         }
     }
     
-    public void startGame() {
+    public void setupAnimationCard() {
         isAnimation = true;
         currentIndex = 0;
         blackCard.setX(centerCard.getX());
         blackCard.setY(centerCard.getY());
+        users.forEach(user -> {
+            if (user.getCards().isEmpty()) {
+                user.getCards().add(getBlackCard());
+            }
+        });
     }
 
     public void cardAnimation() {
@@ -101,8 +117,17 @@ public class CardManager {
                 blackCard.setX(centerCard.getX());
                 blackCard.setY(centerCard.getY());
             } else {
-                isAnimation = false;
-                callBack.CardAnimDone();
+                animationRepeatCount++;
+                if (animationRepeatCount < 3) {
+                    setupAnimationCard();
+                } else {
+                    isAnimation = false;
+                    callBack.CardAnimDone();
+                    animationRepeatCount = 0;
+                    if (!myCards.isEmpty()) {
+                        setCardToUser(myCards, CurrentSessionUtils.USER_ID);
+                    }
+                }
             }
         }
     }
@@ -164,14 +189,15 @@ public class CardManager {
                     float xCard = user.getX() - 24;
                     float yCard = user.getY();
                     user.setCardPosition(new PositionObj(xCard, yCard));
-                    float widthCards = 2 * (width * 2 / cardCount) + width;
+                    int cardNumber = cardCount - 1;
+                    float widthCards = (cardNumber >= 0 ? cardNumber : 0) * (width * 2/3) + width;
                     xCard -= widthCards;
                     for (int i = 0; i < cardCount; i++) {
                         CardObj card = user.getCards().get(i);
                         card.setSize(width, height);
                         card.setPosition(xCard, yCard);
                         card.draw(g2);
-                        xCard += width * 2 / cardCount;
+                        xCard += width * 2/3;
                     }
                 }
                 default -> {

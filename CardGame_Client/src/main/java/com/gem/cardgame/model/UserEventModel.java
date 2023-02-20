@@ -12,12 +12,7 @@ public class UserEventModel {
     private int index;
     private String userID;
     private String userName;
-
-    public UserEventModel(int index, String userID, String userName) {
-        this.userID = userID;
-        this.userName = userName;
-        this.index = index;
-    }
+    private boolean isHost;
 
     public UserEventModel(String userID, String userName) {
         this.userID = userID;
@@ -47,5 +42,13 @@ public class UserEventModel {
     public void setUserName(String userName) {
         this.userName = userName;
     }
+    
+    public boolean isHost() {
+        return isHost;
+    }
 
+    public void setHost(boolean host) {
+        isHost = host;
+    }
+    
 }

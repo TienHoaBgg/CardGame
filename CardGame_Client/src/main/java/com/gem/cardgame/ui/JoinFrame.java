@@ -10,7 +10,6 @@ import com.gem.cardgame.Utils;
 import java.awt.event.KeyEvent;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.temporal.TemporalField;
 import javax.swing.JOptionPane;
 
 /**
@@ -22,6 +21,8 @@ public class JoinFrame extends javax.swing.JFrame {
     /**
      * Creates new form JoinFrame
      */
+    private boolean isConnecting = false;
+    
     public JoinFrame() {
         initComponents();
     }
@@ -36,8 +37,10 @@ public class JoinFrame extends javax.swing.JFrame {
                     switch (state) {
                         case CONNECTING ->
                             txtStatus.setText("Connecting to server...");
-                        case DISCONNECTED ->
+                        case DISCONNECTED -> {
                             txtStatus.setText("Disconnected...");
+                            isConnecting = false;
+                        }
                         default -> {
                             txtStatus.setText("Connected");
                             pushToMain();
@@ -47,11 +50,13 @@ public class JoinFrame extends javax.swing.JFrame {
 
                 @Override
                 public void maxUserConnect() {
+                    isConnecting = false;
                     JOptionPane.showConfirmDialog(null, "Số lượng người chơi đã đạt giới hạn!");
                 }
 
                 @Override
                 public void gameRunning() {
+                    isConnecting = false;
                     JOptionPane.showConfirmDialog(null, "Vui lòng đợi game kết thúc để tham gia.");
                 }
                 
@@ -75,13 +80,17 @@ public class JoinFrame extends javax.swing.JFrame {
     }
 
     private void login() {
+        if (isConnecting) {
+            return;
+        }
         String userName = userNameTextFiel.getText();
         String serverIP = txtServerIP.getText();
         if (userName.equals("")) {
             JOptionPane.showMessageDialog(null, "Nhập tên vào để còn biết ai mà tính nợ anh ơi :))");
         } else if (serverIP.equals("")) {
             JOptionPane.showMessageDialog(null, "Cần IP để connect để server...");
-        }else {
+        } else {
+            isConnecting = true;
             String userId = LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() + "";
             CurrentSessionUtils.USER_NAME = userName;
             CurrentSessionUtils.USER_ID = userId;

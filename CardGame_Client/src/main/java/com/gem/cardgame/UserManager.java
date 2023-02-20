@@ -46,6 +46,10 @@ public class UserManager {
     public void setUsers(List<UserEventModel> userEventModels) {
         usersMap.clear();
         Optional<UserEventModel> currentUser = userEventModels.stream().filter(user -> user.getUserID().equals(CurrentSessionUtils.USER_ID)).findFirst();
+        if (currentUser.get().isHost()) {
+            CurrentSessionUtils.IS_HOST = true;
+            CurrentSessionUtils.IS_YOUR_TURN = true;
+        }
         int currentUserIndex = validateUser(currentUser.get().getUserID());
         if (currentUserIndex == -1) {
             users.add(convertToUser(currentUser.get()));

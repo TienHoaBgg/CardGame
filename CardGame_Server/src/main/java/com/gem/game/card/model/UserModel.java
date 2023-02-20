@@ -9,6 +9,7 @@ public class UserModel {
     private int index;
     private String userID;
     private String userName;
+    private boolean isHost;
     private List<Integer> cards;
     private SocketIOClient socketIOClient;
 
@@ -44,6 +45,14 @@ public class UserModel {
         this.userName = userName;
     }
 
+    public boolean isHost() {
+        return isHost;
+    }
+
+    public void setHost(boolean host) {
+        isHost = host;
+    }
+
     public List<Integer> getCards() {
         return cards;
     }
@@ -61,7 +70,7 @@ public class UserModel {
     }
 
     public UserEventModel toUserEvent() {
-        return new UserEventModel(this.index, this.userID, this.userName);
+        return new UserEventModel(this.index, this.userID, this.userName, this.isHost);
     }
 
 }

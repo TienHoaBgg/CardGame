@@ -24,11 +24,10 @@ public class UserModel extends Obj2D {
     private String userName;
     private int price;
     private UserStatusEnum status;
-    
+    private boolean isHost;
     
     private PositionEnum positionEnum;
     private List<CardObj> cards;
-    private boolean cardOpen;
     private PositionObj cardPosition;
 
     public UserModel(String userId, String userName) {
@@ -40,6 +39,7 @@ public class UserModel extends Obj2D {
     public UserModel(UserEventModel eventModel) {
         this.userId = eventModel.getUserID();
         this.userName = eventModel.getUserName();
+        this.isHost = eventModel.isHost();
         cards = new ArrayList<>();
     }
     
@@ -59,6 +59,14 @@ public class UserModel extends Obj2D {
         this.userName = userName;
     }
 
+    public boolean isHost() {
+        return isHost;
+    }
+
+    public void setIsHost(boolean isHost) {
+        this.isHost = isHost;
+    }
+    
     public UserStatusEnum getStatus() {
         return status;
     }
@@ -76,6 +84,9 @@ public class UserModel extends Obj2D {
     }
 
     public PositionEnum getPositionEnum() {
+        if (positionEnum == null) {
+            positionEnum = PositionEnum.BOTTOM;
+        }
         return positionEnum;
     }
 
@@ -93,15 +104,7 @@ public class UserModel extends Obj2D {
     public void setCards(List<CardObj> cards) {
         this.cards = cards;
     }
-
-    public boolean isCardOpen() {
-        return cardOpen;
-    }
-
-    public void setCardOpen(boolean cardOpen) {
-        this.cardOpen = cardOpen;
-    }
-
+    
     public PositionObj getCardPosition() {
         return cardPosition;
     }

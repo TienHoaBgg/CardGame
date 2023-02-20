@@ -29,6 +29,12 @@ public class ButtonsPanel extends javax.swing.JPanel {
         this.callBack = callBack;
     }
     
+    public void setVisiableButton(boolean isVisiable) {
+        btnBo.setVisible(isVisiable);
+        btnTheo.setVisible(isVisiable);
+        btnTo.setVisible(isVisiable);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -50,7 +56,7 @@ public class ButtonsPanel extends javax.swing.JPanel {
         jPanel1.setLayout(new java.awt.GridLayout(1, 2, 2, 2));
 
         btnTo.setBackground(new java.awt.Color(229, 150, 52));
-        btnTo.setFont(new java.awt.Font("Monospaced", 1, 14)); // NOI18N
+        btnTo.setFont(new java.awt.Font("Tahoma", 1, 16)); // NOI18N
         btnTo.setForeground(new java.awt.Color(255, 255, 255));
         btnTo.setText("Tố");
         btnTo.addActionListener(new java.awt.event.ActionListener() {
@@ -61,7 +67,7 @@ public class ButtonsPanel extends javax.swing.JPanel {
         jPanel1.add(btnTo);
 
         btnTheo.setBackground(new java.awt.Color(0, 135, 248));
-        btnTheo.setFont(new java.awt.Font("Monospaced", 1, 14)); // NOI18N
+        btnTheo.setFont(new java.awt.Font("Tahoma", 1, 16)); // NOI18N
         btnTheo.setForeground(new java.awt.Color(255, 255, 255));
         btnTheo.setText("Theo");
         btnTheo.addActionListener(new java.awt.event.ActionListener() {
@@ -74,7 +80,7 @@ public class ButtonsPanel extends javax.swing.JPanel {
         add(jPanel1);
 
         btnBo.setBackground(new java.awt.Color(102, 102, 102));
-        btnBo.setFont(new java.awt.Font("Monospaced", 0, 14)); // NOI18N
+        btnBo.setFont(new java.awt.Font("Tahoma", 1, 16)); // NOI18N
         btnBo.setForeground(new java.awt.Color(255, 255, 255));
         btnBo.setText("Bỏ");
         btnBo.addActionListener(new java.awt.event.ActionListener() {
