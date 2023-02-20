@@ -59,8 +59,8 @@ public class MainFrame extends javax.swing.JFrame {
         
         socket.on("CURRENT_PLAYERS", (args) -> {
             String json = args[0].toString();
-            List<UserEventModel> currentPlayes = gson.fromJson(json, new TypeToken<List<UserEventModel>>() {}.getType());
-            gameView.userManager.setUsers(currentPlayes);
+            List<UserEventModel> currentPlayers = gson.fromJson(json, new TypeToken<List<UserEventModel>>() {}.getType());
+            gameView.userManager.setUsers(currentPlayers);
             repaint();
             updateCurrentUser();
         });

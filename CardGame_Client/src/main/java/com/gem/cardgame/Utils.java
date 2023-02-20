@@ -7,6 +7,7 @@ package com.gem.cardgame;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
@@ -38,9 +39,9 @@ public class Utils {
     }
     
     public Image getImage(String name) {
-        String path = "./resource/" + name;
+//        String path = "./resource/" + ;
         try {
-            return ImageIO.read(new File(path));
+            return ImageIO.read(Objects.requireNonNull(Utils.class.getClassLoader().getResource(name)));
         } catch (IOException e) {
             logErr(e.getLocalizedMessage());
         }
