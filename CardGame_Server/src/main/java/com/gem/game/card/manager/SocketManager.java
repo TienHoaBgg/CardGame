@@ -2,6 +2,7 @@ package com.gem.game.card.manager;
 
 
 import com.corundumstudio.socketio.*;
+import com.gem.game.card.model.PlayerStateEnum;
 import com.gem.game.card.model.UserEventModel;
 import com.gem.game.card.model.UserModel;
 import com.google.gson.Gson;
@@ -64,6 +65,7 @@ public class SocketManager {
         socketIOServer.addEventListener("JOIN_GAME_REQUEST", String.class, this::joinGameEvent);
 
         socketIOServer.addEventListener("START_GAME", String.class, this::startGame);
+        socketIOServer.addEventListener("PLAYER_FOLLOW_EVENT", String.class, this::followAction);
         socketIOServer.start();
     }
 
@@ -102,22 +104,79 @@ public class SocketManager {
             }
         }
         socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("GAME_STARTED", hostUser.getUserID());
-        // Bai cua thang nao thi gui cho thang day.
+        // Bai cua ai thi gui cho nguoi day.
         totalAmount = 0;
         for (UserModel playerUser : playerUsers) {
             totalAmount += 10;
             Type listType = new TypeToken<List<Integer>>() {}.getType();
             playerUser.getSocketIOClient().sendEvent("MY_CARD_EVENT", gson.toJson(playerUser.getCards(), listType));
-
         }
-        String totalAmountStr = "" + totalAmount;
-        socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("TOTAL_AMOUNT_UPDATED", totalAmountStr);
+        updateTotalAmount();
     }
 
     private void followAction(SocketIOClient socketIOClient, String userId, AckRequest ackRequest) {
+        totalAmount += 10;
+        updateTotalAmount();
+        int userIndex = -1;
+        for (int i = 0; i < playerUsers.size(); i++) {
+            if (playerUsers.get(i).getUserID().equals(userId)) {
+                playerUsers.get(i).setPlayerState(PlayerStateEnum.THEO);
+                userIndex = i;
+            }
+        }
+        UserModel nextUser = getNextUser(userIndex);
+        if (nextUser.getUserID().equals(userId)) {
+            socketIOClient.sendEvent("YOUR_WIN_EVENT");
+        } else if (nextUser.isHost() && checkDoneGame()) {
+            socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("END_GAME_EVENT");
+        } else {
+            nextUser.getSocketIOClient().sendEvent("YOUR_TURN_EVENT");
+        }
+    }
+
+    private boolean checkDoneGame() {
+        boolean isDone = true;
+        for (UserModel userModel : playerUsers) {
+            if (userModel.getPlayerState() == PlayerStateEnum.TO) {
+                isDone = false;
+                break;
+            }
+        }
+        return isDone;
+    }
+
+    private UserModel getNextUser(int userIndex) {
+        UserModel nextUser;
+        int index = userIndex + 1;
+        while (true) {
+            if (index < playerUsers.size()) {
+                UserModel user = playerUsers.get(index);
+                if (index == userIndex) {
+                    return user;
+                }
+                if (user.getPlayerState() == PlayerStateEnum.BO) {
+                    index += 1;
+                } else {
+                    return user;
+                }
+            } else {
+                index = 0;
+            }
+        }
+    }
+
+    private void endGameNotification() {
 
     }
 
+    private void yourWinNotification() {
+
+    }
+
+    private void updateTotalAmount() {
+        String totalAmountStr = "" + totalAmount;
+        socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("TOTAL_AMOUNT_UPDATED", totalAmountStr);
+    }
 
     // ======================== CONFIG GAME ===============================
     private void joinGameEvent(SocketIOClient socketIOClient, String jsonString, AckRequest ackRequest) {

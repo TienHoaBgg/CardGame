@@ -89,6 +89,11 @@ public class MainFrame extends javax.swing.JFrame {
             gameView.updateTotalAmount(amount);
         });
         
+        socket.on("YOUR_TURN_EVENT", (args)  -> {
+            CurrentSessionUtils.IS_YOUR_TURN = true;
+            gameView.yourTurn();
+        });
+        
     }
  
     private void updateCurrentUser() {

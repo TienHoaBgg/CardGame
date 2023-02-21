@@ -56,6 +56,12 @@ public class GamePanel extends JPanel implements CardCallBack {
         userAmount = 0;
     }
     
+    public void yourTurn() {
+        pnButtons.setVisiableButton(true);
+        
+        
+    }
+    
     public void setVisiablePlayButton() {
         startButton.setVisible(CurrentSessionUtils.IS_HOST);
     }
@@ -81,8 +87,7 @@ public class GamePanel extends JPanel implements CardCallBack {
 
             @Override
             public void theoClickAction() {
-                sliderDialog.setValueTo(100, 200);
-                sliderDialog.setVisible(true);
+                socket.emit("PLAYER_FOLLOW_EVENT", CurrentSessionUtils.USER_ID);
             }
 
             @Override

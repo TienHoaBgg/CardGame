@@ -10,6 +10,8 @@ public class UserModel {
     private String userID;
     private String userName;
     private boolean isHost;
+    private boolean yourTurn;
+    private PlayerStateEnum playerState;
     private List<Integer> cards;
     private SocketIOClient socketIOClient;
 
@@ -43,6 +45,22 @@ public class UserModel {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public boolean isYourTurn() {
+        return yourTurn;
+    }
+
+    public void setYourTurn(boolean yourTurn) {
+        this.yourTurn = yourTurn;
+    }
+
+    public PlayerStateEnum getPlayerState() {
+        return playerState;
+    }
+
+    public void setPlayerState(PlayerStateEnum playerState) {
+        this.playerState = playerState;
     }
 
     public boolean isHost() {
