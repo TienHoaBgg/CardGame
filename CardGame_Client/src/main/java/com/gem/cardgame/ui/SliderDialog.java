@@ -31,7 +31,12 @@ public class SliderDialog extends javax.swing.JDialog {
         slider.setMinimum(min);
         slider.setMaximum(max);
         slider.setValue(min);
-        txtValue.setText("" + slider.getValue());
+        int value = slider.getValue();
+        if (value == 0) {
+            txtValue.setText("THEO");
+        } else {
+            txtValue.setText("" + slider.getValue());
+        }
     }
     
     public void setCallBack(ISliderCallBack callBack) {

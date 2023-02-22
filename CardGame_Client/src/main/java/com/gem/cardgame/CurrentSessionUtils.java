@@ -10,6 +10,7 @@ package com.gem.cardgame;
  */
 public class CurrentSessionUtils {
     
+    public static int USER_INDEX;
     public static String USER_ID;
     public static String USER_NAME;
     public static boolean IS_HOST;

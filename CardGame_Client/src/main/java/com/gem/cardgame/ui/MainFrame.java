@@ -7,6 +7,7 @@ package com.gem.cardgame.ui;
 import com.gem.cardgame.CurrentSessionUtils;
 import com.gem.cardgame.SocketManager;
 import com.gem.cardgame.model.ChatEventModel;
+import com.gem.cardgame.model.GameEventModel;
 import com.gem.cardgame.model.UserEventModel;
 import com.gem.cardgame.model.UserModel;
 import com.google.gson.Gson;
@@ -87,6 +88,13 @@ public class MainFrame extends javax.swing.JFrame {
             String amountStr = args[0].toString();
             int amount = Integer.parseInt(amountStr);
             gameView.updateTotalAmount(amount);
+        });
+        
+        socket.on("PLAYER_CHANGE_STATE_EVENT", (args) -> {
+           String json = args[0].toString();
+           GameEventModel event = gson.fromJson(json, GameEventModel.class);
+           gameView.userManager.updateStateUser(event);
+           repaint();
         });
         
         socket.on("YOUR_TURN_EVENT", (args)  -> {

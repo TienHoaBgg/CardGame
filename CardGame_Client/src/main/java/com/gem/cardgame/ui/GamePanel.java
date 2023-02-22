@@ -9,7 +9,10 @@ import com.gem.cardgame.CardManager.CardCallBack;
 import com.gem.cardgame.CurrentSessionUtils;
 import com.gem.cardgame.UserManager;
 import com.gem.cardgame.Utils;
+import com.gem.cardgame.model.GameEventModel;
 import com.gem.cardgame.obj.SizeObj;
+import com.gem.cardgame.objenum.PlayerStateEnum;
+import com.google.gson.Gson;
 import io.socket.client.Socket;
 import java.awt.Color;
 import java.awt.Font;
@@ -34,6 +37,7 @@ public class GamePanel extends JPanel implements CardCallBack {
     private SliderDialog sliderDialog;
     private JButton startButton;
     private boolean gameStarted = false;
+    private final Gson gson;
     // Tien Ga
     private int totalAmount = 0;
     // Tien nguoi dung
@@ -41,6 +45,7 @@ public class GamePanel extends JPanel implements CardCallBack {
     
     public GamePanel(Socket socket) {
         this.socket = socket;
+        gson = new Gson();
         initPNButton();
         bgImage = Utils.getInstance().getImage("background_board.jpg");
         userManager = new UserManager();
@@ -57,8 +62,7 @@ public class GamePanel extends JPanel implements CardCallBack {
     }
     
     public void yourTurn() {
-        pnButtons.setVisiableButton(true);
-        
+        pnButtons.setVisiableButton(CurrentSessionUtils.IS_YOUR_TURN);
         
     }
     
@@ -80,30 +84,32 @@ public class GamePanel extends JPanel implements CardCallBack {
         pnButtons.setCallBack(new ButtonsPanel.IButtonCallBack() {
             @Override
             public void toClickAction() {
-                sliderDialog.setValueTo(0, 100);
+                sliderDialog.setValueTo(0, 50);
                 sliderDialog.setVisible(true);
-                
             }
 
             @Override
             public void theoClickAction() {
-                socket.emit("PLAYER_FOLLOW_EVENT", CurrentSessionUtils.USER_ID);
+                GameEventModel model = new GameEventModel(10, PlayerStateEnum.FOLLOW);
+                socket.emit("PLAYER_FOLLOW_EVENT", gson.toJson(model));
             }
 
             @Override
             public void boClickAction() {
-                
+                GameEventModel model = new GameEventModel(0, PlayerStateEnum.CANCEL);
+                socket.emit("PLAYER_CANCEL_EVENT", gson.toJson(model));
             }
         });
         sliderDialog.setCallBack((int value) -> {
-            System.out.println("Tố: " + value);
+            GameEventModel model = new GameEventModel(value, PlayerStateEnum.UPPER);
+            socket.emit("PLAYER_UPPER_EVENT", gson.toJson(model));
         });
         pnButtons.setVisiableButton(false);
     }
     
     private void initStartButton() {
         startButton = new JButton("Bắt đầu");
-        startButton.setFont(new Font("Helvetica Neue", Font.BOLD | Font.ITALIC, 32));
+        startButton.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 32));
         startButton.setBounds(this.getWidth()/2 - 100, this.getHeight()/2 - 35, 200, 69);
         startButton.setBackground(new Color(225, 77, 45));
         startButton.setForeground(Color.WHITE);

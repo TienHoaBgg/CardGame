@@ -2,6 +2,7 @@ package com.gem.game.card.manager;
 
 
 import com.corundumstudio.socketio.*;
+import com.gem.game.card.model.GameEventModel;
 import com.gem.game.card.model.PlayerStateEnum;
 import com.gem.game.card.model.UserEventModel;
 import com.gem.game.card.model.UserModel;
@@ -66,6 +67,8 @@ public class SocketManager {
 
         socketIOServer.addEventListener("START_GAME", String.class, this::startGame);
         socketIOServer.addEventListener("PLAYER_FOLLOW_EVENT", String.class, this::followAction);
+        socketIOServer.addEventListener("PLAYER_UPPER_EVENT", String.class, this::upperActionEvent);
+        socketIOServer.addEventListener("PLAYER_CANCEL_EVENT", String.class, this::cancelActionEvent);
         socketIOServer.start();
     }
 
@@ -114,20 +117,47 @@ public class SocketManager {
         updateTotalAmount();
     }
 
-    private void followAction(SocketIOClient socketIOClient, String userId, AckRequest ackRequest) {
-        totalAmount += 10;
-        updateTotalAmount();
-        int userIndex = -1;
-        for (int i = 0; i < playerUsers.size(); i++) {
-            if (playerUsers.get(i).getUserID().equals(userId)) {
-                playerUsers.get(i).setPlayerState(PlayerStateEnum.THEO);
-                userIndex = i;
-            }
+    private void followAction(SocketIOClient socketIOClient, String json, AckRequest ackRequest) {
+        GameEventModel eventModel = gson.fromJson(json, GameEventModel.class);
+        socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("PLAYER_CHANGE_STATE_EVENT", json);
+        if (eventModel.getIndex() < playerUsers.size()) {
+            playerUsers.get(eventModel.getIndex()).setPlayerState(PlayerStateEnum.FOLLOW);
         }
-        UserModel nextUser = getNextUser(userIndex);
-        if (nextUser.getUserID().equals(userId)) {
+        UserModel nextUser = getNextUser(eventModel.getIndex());
+        if (nextUser.getUserID().equals(eventModel.getUserId())) {
             socketIOClient.sendEvent("YOUR_WIN_EVENT");
         } else if (nextUser.isHost() && checkDoneGame()) {
+            socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("END_GAME_EVENT");
+        } else {
+            nextUser.getSocketIOClient().sendEvent("YOUR_TURN_EVENT");
+        }
+    }
+
+    private void upperActionEvent(SocketIOClient socketIOClient, String json, AckRequest ackRequest) {
+        GameEventModel eventModel = gson.fromJson(json, GameEventModel.class);
+        socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("PLAYER_CHANGE_STATE_EVENT", json);
+        if (eventModel.getIndex() < playerUsers.size()) {
+            playerUsers.get(eventModel.getIndex()).setPlayerState(PlayerStateEnum.UPPER);
+            playerUsers.get(eventModel.getIndex()).setHost(true);
+        }
+        UserModel nextUser = getNextUser(eventModel.getIndex());
+        if (nextUser.getUserID().equals(eventModel.getUserId())) {
+            socketIOClient.sendEvent("YOUR_WIN_EVENT");
+        } else if (nextUser.isHost() && checkDoneGame()) {
+            socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("END_GAME_EVENT");
+        } else {
+            nextUser.getSocketIOClient().sendEvent("YOUR_TURN_EVENT");
+        }
+    }
+
+    private void cancelActionEvent(SocketIOClient socketIOClient, String json, AckRequest ackRequest) {
+        GameEventModel eventModel = gson.fromJson(json, GameEventModel.class);
+        socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("PLAYER_CHANGE_STATE_EVENT", json);
+        if (eventModel.getIndex() < playerUsers.size()) {
+            playerUsers.get(eventModel.getIndex()).setPlayerState(PlayerStateEnum.CANCEL);
+        }
+        UserModel nextUser = getNextUser(eventModel.getIndex());
+        if (nextUser.isHost() && checkDoneGame()) {
             socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("END_GAME_EVENT");
         } else {
             nextUser.getSocketIOClient().sendEvent("YOUR_TURN_EVENT");
@@ -137,7 +167,7 @@ public class SocketManager {
     private boolean checkDoneGame() {
         boolean isDone = true;
         for (UserModel userModel : playerUsers) {
-            if (userModel.getPlayerState() == PlayerStateEnum.TO) {
+            if (userModel.getPlayerState() == PlayerStateEnum.UPPER) {
                 isDone = false;
                 break;
             }
@@ -146,7 +176,6 @@ public class SocketManager {
     }
 
     private UserModel getNextUser(int userIndex) {
-        UserModel nextUser;
         int index = userIndex + 1;
         while (true) {
             if (index < playerUsers.size()) {
@@ -154,7 +183,7 @@ public class SocketManager {
                 if (index == userIndex) {
                     return user;
                 }
-                if (user.getPlayerState() == PlayerStateEnum.BO) {
+                if (user.getPlayerState() == PlayerStateEnum.CANCEL) {
                     index += 1;
                 } else {
                     return user;

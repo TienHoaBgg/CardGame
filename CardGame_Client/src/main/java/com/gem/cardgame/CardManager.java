@@ -159,7 +159,8 @@ public class CardManager {
                     float xCenter = screenSize.getWidth() / 2;
                     float yCard = user.getY() + user.getHeight() + 24;
                     user.setCardPosition(new PositionObj(xCenter - width / 2, yCard));
-                    float widthCards = cardCount * (width * 2 / cardCount);
+                    int cardNumber = cardCount - 1;
+                    float widthCards = (cardNumber >= 0 ? cardNumber : 0) * (width * 2/3) + width;
                     xCenter -= widthCards / 2;
                     for (int i = 0; i < cardCount; i++) {
                         CardObj card = user.getCards().get(i);

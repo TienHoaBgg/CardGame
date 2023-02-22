@@ -8,7 +8,7 @@ import com.gem.cardgame.obj.CardObj;
 import com.gem.cardgame.obj.Obj2D;
 import com.gem.cardgame.obj.PositionObj;
 import com.gem.cardgame.objenum.PositionEnum;
-import com.gem.cardgame.objenum.UserStatusEnum;
+import com.gem.cardgame.objenum.PlayerStateEnum;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -20,12 +20,13 @@ import java.util.List;
  * @author gem
  */
 public class UserModel extends Obj2D {
+
     private String userId;
     private String userName;
     private int price;
-    private UserStatusEnum status;
+    private PlayerStateEnum state;
     private boolean isHost;
-    
+
     private PositionEnum positionEnum;
     private List<CardObj> cards;
     private PositionObj cardPosition;
@@ -42,7 +43,7 @@ public class UserModel extends Obj2D {
         this.isHost = eventModel.isHost();
         cards = new ArrayList<>();
     }
-    
+
     public String getUserId() {
         return userId;
     }
@@ -66,15 +67,15 @@ public class UserModel extends Obj2D {
     public void setIsHost(boolean isHost) {
         this.isHost = isHost;
     }
-    
-    public UserStatusEnum getStatus() {
-        return status;
+
+    public PlayerStateEnum getStatus() {
+        return state;
     }
 
-    public void setStatus(UserStatusEnum status) {
-        this.status = status;
+    public void setStatus(PlayerStateEnum status) {
+        this.state = status;
     }
-    
+
     public int getPrice() {
         return price;
     }
@@ -104,7 +105,7 @@ public class UserModel extends Obj2D {
     public void setCards(List<CardObj> cards) {
         this.cards = cards;
     }
-    
+
     public PositionObj getCardPosition() {
         return cardPosition;
     }
@@ -112,38 +113,43 @@ public class UserModel extends Obj2D {
     public void setCardPosition(PositionObj cardPosition) {
         this.cardPosition = cardPosition;
     }
-    
+
     @Override
     public void draw(Graphics2D g2) {
         super.draw(g2);
-        g2.setFont(new Font("Helvetica Neue", Font.BOLD, 13));
+        g2.setFont(new Font("Tahoma", Font.BOLD, 13));
         g2.setColor(Color.LIGHT_GRAY);
         int widthName = g2.getFontMetrics().stringWidth(userName);
-        float nameX = (x + width/2) - (widthName/2);
+        float nameX = (x + width / 2) - (widthName / 2);
         g2.drawString(userName, nameX, y);
         String statusString = "";
-        if (status != null) {
-             switch (status) {
-            case READY -> {
-                statusString = "";
-            }
-            case TO -> {
-                statusString = "ĐÃ Tố";
-            }
-            case THEO -> {
-                statusString = "THEO";
-            }
-            case BO -> {
-                statusString = "ĐÃ BỎ";
-            }
-            case WINNER -> { statusString = "WINNER"; }
-        }
-        int widthPrice = g2.getFontMetrics().stringWidth(statusString);
-        g2.setFont(new Font("Helvetica Neue", Font.BOLD | Font.ITALIC, 18));
-        g2.setColor(Color.ORANGE);
-        float priceX = (x + width/2) - (widthPrice/2);
-        g2.drawString(statusString, priceX, y + height + 12);
-        }
+//        if (state != null) {
+//            switch (state) {
+//                case NONE -> {
+//                    statusString = "NONE";
+//                }
+//                case UPPER -> {
+//                    statusString = "Đã tố";
+//                    g2.setColor(Color.BLUE);
+//                }
+//                case FOLLOW -> {
+//                    statusString = "Theo";
+//                    g2.setColor(new Color(254, 128, 41));
+//                }
+//                case CANCEL -> {
+//                    statusString = "Đã bỏ";
+//                    g2.setColor(Color.WHITE);
+//                }
+//                case WINNER -> {
+                    statusString = "WINNER";
+//                }
+//            }
+            int widthStatus = g2.getFontMetrics().stringWidth(statusString);
+            g2.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 22));
+            g2.setColor(Color.RED);
+            float stateX = (x + width / 2) - (widthStatus / 2);
+            g2.drawString(statusString, stateX, y + height/2);
+//        }
     }
-    
+
 }

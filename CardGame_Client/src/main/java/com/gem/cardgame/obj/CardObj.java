@@ -5,6 +5,7 @@
 package com.gem.cardgame.obj;
 
 import com.gem.cardgame.objenum.CardType;
+import java.awt.Graphics2D;
 import java.awt.Image;
 
 /**
@@ -63,5 +64,14 @@ public class CardObj extends Obj2D {
     public void setOpen(boolean isOpen) {
         this.isOpen = isOpen;
     }
+
+    @Override
+    public void draw(Graphics2D g2) {
+        super.draw(g2);
+        
+        
+    }
+    
+    
     
 }

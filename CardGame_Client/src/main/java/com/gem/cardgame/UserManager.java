@@ -4,6 +4,7 @@
  */
 package com.gem.cardgame;
 
+import com.gem.cardgame.model.GameEventModel;
 import com.gem.cardgame.objenum.PositionEnum;
 import com.gem.cardgame.obj.PositionObj;
 import com.gem.cardgame.obj.SizeObj;
@@ -46,6 +47,7 @@ public class UserManager {
     public void setUsers(List<UserEventModel> userEventModels) {
         usersMap.clear();
         Optional<UserEventModel> currentUser = userEventModels.stream().filter(user -> user.getUserID().equals(CurrentSessionUtils.USER_ID)).findFirst();
+        CurrentSessionUtils.USER_INDEX = currentUser.get().getIndex();
         if (currentUser.get().isHost()) {
             CurrentSessionUtils.IS_HOST = true;
             CurrentSessionUtils.IS_YOUR_TURN = true;
@@ -77,6 +79,14 @@ public class UserManager {
         } else {
             JOptionPane.showConfirmDialog(null, "Có lỗi xảy ra!!! Vui lòng thoát ra vào lại.");
         }
+    }
+    
+    public void updateStateUser(GameEventModel model) {
+        usersMap.forEach(((key, value) -> {
+            if (value.getUserId().equals(model.getUserId())) {
+                usersMap.get(key).setStatus(model.getState());
+            }
+        }));
     }
     
     private UserModel convertToUser(UserEventModel userEventModel) {
