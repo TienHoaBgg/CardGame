@@ -32,11 +32,12 @@ public class SliderDialog extends javax.swing.JDialog {
         slider.setMaximum(max);
         slider.setValue(min);
         int value = slider.getValue();
-        if (value == 0) {
+        if (value == min) {
             txtValue.setText("THEO");
         } else {
             txtValue.setText("" + slider.getValue());
         }
+        repaint();
     }
     
     public void setCallBack(ISliderCallBack callBack) {
@@ -158,7 +159,9 @@ public class SliderDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        callBack.onChangeValue(slider.getValue());
+        int min = slider.getMinimum();
+        int value = slider.getValue();
+        callBack.onChangeValue(value, value > min);
         this.setVisible(false);
         dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -210,7 +213,7 @@ public class SliderDialog extends javax.swing.JDialog {
     }
 
     interface ISliderCallBack {
-        void onChangeValue(int value);
+        void onChangeValue(int value, boolean isUp);
     }
     
     

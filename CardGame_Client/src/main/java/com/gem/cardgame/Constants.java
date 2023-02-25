@@ -10,6 +10,8 @@ package com.gem.cardgame;
  */
 public class Constants {
     
+    public static int AMOUNT_DEFAULT = 10;
+    
     
     
 }

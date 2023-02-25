@@ -8,7 +8,6 @@ import com.gem.game.card.model.UserEventModel;
 import com.gem.game.card.model.UserModel;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +33,7 @@ public class SocketManager {
     public static SocketIOServer socketIOServer;
     private boolean gameIsRunning = false;
     private int totalAmount;
-    private UserModel hostUser;
+    private int amountSpace;
 
     @Autowired
     private Gson gson;
@@ -90,10 +89,11 @@ public class SocketManager {
 //        gameIsRunning = true;
         List<Integer> cards = new ArrayList<>();
         playerUsers = playerUsers.stream().sorted(Comparator.comparing(UserModel::getIndex)).collect(Collectors.toList());
+        AtomicReference<String> hostUserId = new AtomicReference<>("");
         playerUsers.forEach((userModel -> {
             userModel.getCards().clear();
             if (userModel.isHost()) {
-                hostUser = userModel;
+                hostUserId.set(userModel.getUserID());
             }
         }));
 
@@ -107,19 +107,22 @@ public class SocketManager {
                 playerUser.getCards().add(cardRandom);
             }
         }
-        socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("GAME_STARTED", hostUser.getUserID());
+        socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("GAME_STARTED", hostUserId.get());
         // Bai cua ai thi gui cho nguoi day.
+        int amount = 0;
         totalAmount = 0;
         for (UserModel playerUser : playerUsers) {
-            totalAmount += 10;
+            amount += 10;
             Type listType = new TypeToken<List<Integer>>() {}.getType();
             playerUser.getSocketIOClient().sendEvent("MY_CARD_EVENT", gson.toJson(playerUser.getCards(), listType));
         }
-        updateTotalAmount();
+        updateTotalAmount(amount);
     }
 
     private void followAction(SocketIOClient socketIOClient, String json, AckRequest ackRequest) {
         GameEventModel eventModel = gson.fromJson(json, GameEventModel.class);
+        updateTotalAmount(eventModel.getAmount());
+        LOG.info("User: " + eventModel.getUserId() + " - Theo: " + eventModel.getAmount());
         socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("PLAYER_CHANGE_STATE_EVENT", json);
         if (eventModel.getIndex() < playerUsers.size()) {
             playerUsers.get(eventModel.getIndex()).setPlayerState(PlayerStateEnum.FOLLOW);
@@ -128,22 +131,23 @@ public class SocketManager {
         if (nextUser.isHost()) {
             handleEndGame();
         } else {
-            LOG.info("YOUR_TURN_EVENT: " + nextUser.getUserName());
             nextUser.getSocketIOClient().sendEvent("YOUR_TURN_EVENT");
         }
     }
 
     private void upperActionEvent(SocketIOClient socketIOClient, String json, AckRequest ackRequest) {
         GameEventModel eventModel = gson.fromJson(json, GameEventModel.class);
+        updateTotalAmount(eventModel.getAmount());
+        LOG.info("User: " + eventModel.getUserId() + " - tố: " + eventModel.getAmount());
+
         socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("PLAYER_CHANGE_STATE_EVENT", json);
-        for (int i = 0; i < playerUsers.size(); i ++) {
-            UserModel user = playerUsers.get(i);
+        for (UserModel user : playerUsers) {
             if (user.getIndex() == eventModel.getIndex()) {
-                playerUsers.get(i).setHost(true);
-                playerUsers.get(i).setPlayerState(PlayerStateEnum.UPPER);
+                user.setHost(true);
+                user.setPlayerState(PlayerStateEnum.UPPER);
             } else if (user.getPlayerState() != PlayerStateEnum.CANCEL) {
-                playerUsers.get(i).setHost(false);
-                playerUsers.get(i).setPlayerState(PlayerStateEnum.NONE);
+                user.setHost(false);
+                user.setPlayerState(PlayerStateEnum.NONE);
             }
         }
         UserModel nextUser = getNextUser(eventModel.getIndex());
@@ -158,6 +162,7 @@ public class SocketManager {
     private void cancelActionEvent(SocketIOClient socketIOClient, String json, AckRequest ackRequest) {
         GameEventModel eventModel = gson.fromJson(json, GameEventModel.class);
         socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("PLAYER_CHANGE_STATE_EVENT", json);
+        LOG.info("User: " + eventModel.getUserId() + " - cancel: " + eventModel.getAmount());
         if (eventModel.getIndex() < playerUsers.size()) {
             playerUsers.get(eventModel.getIndex()).setPlayerState(PlayerStateEnum.CANCEL);
         }
@@ -211,8 +216,10 @@ public class SocketManager {
 
     }
 
-    private void updateTotalAmount() {
+    private void updateTotalAmount(int amount) {
+        totalAmount += amount;
         String totalAmountStr = "" + totalAmount;
+        LOG.info("Total amount: " + totalAmountStr);
         socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("TOTAL_AMOUNT_UPDATED", totalAmountStr);
     }
 

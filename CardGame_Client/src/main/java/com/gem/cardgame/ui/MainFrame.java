@@ -10,6 +10,7 @@ import com.gem.cardgame.model.ChatEventModel;
 import com.gem.cardgame.model.GameEventModel;
 import com.gem.cardgame.model.UserEventModel;
 import com.gem.cardgame.model.UserModel;
+import com.gem.cardgame.objenum.PlayerStateEnum;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.socket.client.Socket;
@@ -73,6 +74,9 @@ public class MainFrame extends javax.swing.JFrame {
             if (hostUserId == null ? CurrentSessionUtils.USER_ID == null : hostUserId.equals(CurrentSessionUtils.USER_ID)) {
                 CurrentSessionUtils.IS_HOST = true;
                 CurrentSessionUtils.IS_YOUR_TURN = true;
+            } else {
+                CurrentSessionUtils.IS_HOST = false;
+                CurrentSessionUtils.IS_YOUR_TURN = false;
             }
             gameView.gameStarted();
         });
@@ -94,11 +98,14 @@ public class MainFrame extends javax.swing.JFrame {
            String json = args[0].toString();
            GameEventModel event = gson.fromJson(json, GameEventModel.class);
            gameView.userManager.updateStateUser(event);
+            if (event.getState() == PlayerStateEnum.UPPER) {
+                gameView.upperEvent(event.getAmount());
+            }
             if (event.getUserId().equals(CurrentSessionUtils.USER_ID)) {
                 CurrentSessionUtils.IS_YOUR_TURN = false;
                 gameView.yourTurn();
             }
-           repaint();
+            repaint();
         });
         
         socket.on("YOUR_TURN_EVENT", (args)  -> {
@@ -107,9 +114,7 @@ public class MainFrame extends javax.swing.JFrame {
         });
         
         socket.on("END_GAME_EVENT", (args) -> {
-            
-            
-            
+            gameView.endGameEvent();
         });
         
     }

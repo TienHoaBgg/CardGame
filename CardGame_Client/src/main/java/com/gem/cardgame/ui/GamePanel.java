@@ -6,6 +6,7 @@ package com.gem.cardgame.ui;
 
 import com.gem.cardgame.CardManager;
 import com.gem.cardgame.CardManager.CardCallBack;
+import com.gem.cardgame.Constants;
 import com.gem.cardgame.CurrentSessionUtils;
 import com.gem.cardgame.UserManager;
 import com.gem.cardgame.Utils;
@@ -40,8 +41,10 @@ public class GamePanel extends JPanel implements CardCallBack {
     private final Gson gson;
     // Tien Ga
     private int totalAmount = 0;
-    // Tien nguoi dung
-    private int userAmount = 0;
+    // Tien nguoi dung to
+    private int userUpperAmount = 0;
+    // Tien cua ban da choi trong van
+    private int yourAmount = 0;
     
     public GamePanel(Socket socket) {
         this.socket = socket;
@@ -58,7 +61,14 @@ public class GamePanel extends JPanel implements CardCallBack {
         startGameAnimation();
         startButton.setVisible(false);
         totalAmount = 0;
-        userAmount = 0;
+        userUpperAmount = 0;
+        yourAmount = 0;
+    }
+    
+    public void endGameEvent() {
+        System.out.println("==>> Total: "+ totalAmount);
+        System.out.println("==>> Your Amount: "+ yourAmount);
+        System.out.println("==>> Upper : "+ userUpperAmount);
     }
     
     public void yourTurn() {
@@ -75,6 +85,10 @@ public class GamePanel extends JPanel implements CardCallBack {
         repaint();
     }
     
+    public void upperEvent(int value) {
+        userUpperAmount = value;
+    }
+    
     private void initPNButton() {
         initStartButton();
         pnButtons = new ButtonsPanel();
@@ -84,13 +98,23 @@ public class GamePanel extends JPanel implements CardCallBack {
         pnButtons.setCallBack(new ButtonsPanel.IButtonCallBack() {
             @Override
             public void toClickAction() {
-                sliderDialog.setValueTo(0, 50);
+                int value = Constants.AMOUNT_DEFAULT;
+                if (userUpperAmount > yourAmount) {
+                    value = userUpperAmount - yourAmount;
+                }
+                int max = value + 50;
+                sliderDialog.setValueTo(value, max);
                 sliderDialog.setVisible(true);
             }
 
             @Override
             public void theoClickAction() {
-                GameEventModel model = new GameEventModel(10, PlayerStateEnum.FOLLOW);
+                int value = Constants.AMOUNT_DEFAULT;
+                if (userUpperAmount > yourAmount) {
+                    value = userUpperAmount - yourAmount;
+                }
+                yourAmount += value;
+                GameEventModel model = new GameEventModel(value, PlayerStateEnum.FOLLOW);
                 socket.emit("PLAYER_FOLLOW_EVENT", gson.toJson(model));
             }
 
@@ -100,9 +124,15 @@ public class GamePanel extends JPanel implements CardCallBack {
                 socket.emit("PLAYER_CANCEL_EVENT", gson.toJson(model));
             }
         });
-        sliderDialog.setCallBack((int value) -> {
-            GameEventModel model = new GameEventModel(value, PlayerStateEnum.UPPER);
-            socket.emit("PLAYER_UPPER_EVENT", gson.toJson(model));
+        sliderDialog.setCallBack((int value, boolean isUp) -> {
+            yourAmount += value;
+            if (isUp) {
+                GameEventModel model = new GameEventModel(value, PlayerStateEnum.UPPER);
+                socket.emit("PLAYER_UPPER_EVENT", gson.toJson(model));
+            } else {
+                GameEventModel model = new GameEventModel(value, PlayerStateEnum.FOLLOW);
+                socket.emit("PLAYER_FOLLOW_EVENT", gson.toJson(model));
+            }
         });
         pnButtons.setVisiableButton(false);
     }
