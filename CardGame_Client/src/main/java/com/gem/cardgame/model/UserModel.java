@@ -123,33 +123,33 @@ public class UserModel extends Obj2D {
         float nameX = (x + width / 2) - (widthName / 2);
         g2.drawString(userName, nameX, y);
         String statusString = "";
-//        if (state != null) {
-//            switch (state) {
-//                case NONE -> {
-//                    statusString = "NONE";
-//                }
-//                case UPPER -> {
-//                    statusString = "Đã tố";
-//                    g2.setColor(Color.BLUE);
-//                }
-//                case FOLLOW -> {
-//                    statusString = "Theo";
-//                    g2.setColor(new Color(254, 128, 41));
-//                }
-//                case CANCEL -> {
-//                    statusString = "Đã bỏ";
-//                    g2.setColor(Color.WHITE);
-//                }
-//                case WINNER -> {
+        if (state != null) {
+            switch (state) {
+                case NONE -> {
+                    statusString = "NONE";
+                }
+                case UPPER -> {
+                    statusString = "Đã tố";
+                    g2.setColor(Color.GREEN);
+                }
+                case FOLLOW -> {
+                    statusString = "Theo";
+                    g2.setColor(new Color(254, 128, 41));
+                }
+                case CANCEL -> {
+                    statusString = "Đã bỏ";
+                    g2.setColor(Color.WHITE);
+                }
+                case WINNER -> {
                     statusString = "WINNER";
-//                }
-//            }
+                    g2.setColor(Color.RED);
+                }
+            }
             int widthStatus = g2.getFontMetrics().stringWidth(statusString);
             g2.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 22));
-            g2.setColor(Color.RED);
-            float stateX = (x + width / 2) - (widthStatus / 2);
+            float stateX = (x + width / 2) - (widthStatus / 2) - 5;
             g2.drawString(statusString, stateX, y + height/2);
-//        }
+        }
     }
 
 }

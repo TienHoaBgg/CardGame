@@ -51,6 +51,9 @@ public class UserManager {
         if (currentUser.get().isHost()) {
             CurrentSessionUtils.IS_HOST = true;
             CurrentSessionUtils.IS_YOUR_TURN = true;
+        } else {
+            CurrentSessionUtils.IS_HOST = false;
+            CurrentSessionUtils.IS_YOUR_TURN = false;
         }
         int currentUserIndex = validateUser(currentUser.get().getUserID());
         if (currentUserIndex == -1) {

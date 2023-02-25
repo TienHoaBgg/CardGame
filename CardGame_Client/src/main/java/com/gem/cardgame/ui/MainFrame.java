@@ -94,12 +94,22 @@ public class MainFrame extends javax.swing.JFrame {
            String json = args[0].toString();
            GameEventModel event = gson.fromJson(json, GameEventModel.class);
            gameView.userManager.updateStateUser(event);
+            if (event.getUserId().equals(CurrentSessionUtils.USER_ID)) {
+                CurrentSessionUtils.IS_YOUR_TURN = false;
+                gameView.yourTurn();
+            }
            repaint();
         });
         
         socket.on("YOUR_TURN_EVENT", (args)  -> {
             CurrentSessionUtils.IS_YOUR_TURN = true;
             gameView.yourTurn();
+        });
+        
+        socket.on("END_GAME_EVENT", (args) -> {
+            
+            
+            
         });
         
     }

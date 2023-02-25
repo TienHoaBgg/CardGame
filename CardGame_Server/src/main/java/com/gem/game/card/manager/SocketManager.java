@@ -8,6 +8,7 @@ import com.gem.game.card.model.UserEventModel;
 import com.gem.game.card.model.UserModel;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.catalina.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,11 +125,10 @@ public class SocketManager {
             playerUsers.get(eventModel.getIndex()).setPlayerState(PlayerStateEnum.FOLLOW);
         }
         UserModel nextUser = getNextUser(eventModel.getIndex());
-        if (nextUser.getUserID().equals(eventModel.getUserId())) {
-            socketIOClient.sendEvent("YOUR_WIN_EVENT");
-        } else if (nextUser.isHost() && checkDoneGame()) {
-            socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("END_GAME_EVENT");
+        if (nextUser.isHost()) {
+            handleEndGame();
         } else {
+            LOG.info("YOUR_TURN_EVENT: " + nextUser.getUserName());
             nextUser.getSocketIOClient().sendEvent("YOUR_TURN_EVENT");
         }
     }
@@ -136,16 +136,21 @@ public class SocketManager {
     private void upperActionEvent(SocketIOClient socketIOClient, String json, AckRequest ackRequest) {
         GameEventModel eventModel = gson.fromJson(json, GameEventModel.class);
         socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("PLAYER_CHANGE_STATE_EVENT", json);
-        if (eventModel.getIndex() < playerUsers.size()) {
-            playerUsers.get(eventModel.getIndex()).setPlayerState(PlayerStateEnum.UPPER);
-            playerUsers.get(eventModel.getIndex()).setHost(true);
+        for (int i = 0; i < playerUsers.size(); i ++) {
+            UserModel user = playerUsers.get(i);
+            if (user.getIndex() == eventModel.getIndex()) {
+                playerUsers.get(i).setHost(true);
+                playerUsers.get(i).setPlayerState(PlayerStateEnum.UPPER);
+            } else if (user.getPlayerState() != PlayerStateEnum.CANCEL) {
+                playerUsers.get(i).setHost(false);
+                playerUsers.get(i).setPlayerState(PlayerStateEnum.NONE);
+            }
         }
         UserModel nextUser = getNextUser(eventModel.getIndex());
-        if (nextUser.getUserID().equals(eventModel.getUserId())) {
-            socketIOClient.sendEvent("YOUR_WIN_EVENT");
-        } else if (nextUser.isHost() && checkDoneGame()) {
-            socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("END_GAME_EVENT");
+        if (nextUser.isHost()) {
+            handleEndGame();
         } else {
+            LOG.info("YOUR_TURN_EVENT: " + nextUser.getUserName());
             nextUser.getSocketIOClient().sendEvent("YOUR_TURN_EVENT");
         }
     }
@@ -157,22 +162,16 @@ public class SocketManager {
             playerUsers.get(eventModel.getIndex()).setPlayerState(PlayerStateEnum.CANCEL);
         }
         UserModel nextUser = getNextUser(eventModel.getIndex());
-        if (nextUser.isHost() && checkDoneGame()) {
-            socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("END_GAME_EVENT");
+        if (nextUser.isHost()) {
+            handleEndGame();
         } else {
+            if (playerUsers.get(eventModel.getIndex()).isHost()) {
+                playerUsers.get(eventModel.getIndex()).setHost(false);
+                playerUsers.get(nextUser.getIndex()).setHost(true);
+            }
+            LOG.info("YOUR_TURN_EVENT: " + nextUser.getUserName());
             nextUser.getSocketIOClient().sendEvent("YOUR_TURN_EVENT");
         }
-    }
-
-    private boolean checkDoneGame() {
-        boolean isDone = true;
-        for (UserModel userModel : playerUsers) {
-            if (userModel.getPlayerState() == PlayerStateEnum.UPPER) {
-                isDone = false;
-                break;
-            }
-        }
-        return isDone;
     }
 
     private UserModel getNextUser(int userIndex) {
@@ -180,9 +179,6 @@ public class SocketManager {
         while (true) {
             if (index < playerUsers.size()) {
                 UserModel user = playerUsers.get(index);
-                if (index == userIndex) {
-                    return user;
-                }
                 if (user.getPlayerState() == PlayerStateEnum.CANCEL) {
                     index += 1;
                 } else {
@@ -194,7 +190,20 @@ public class SocketManager {
         }
     }
 
-    private void endGameNotification() {
+    private void handleEndGame() {
+        for (UserModel user : playerUsers) {
+            user.setPlayerState(PlayerStateEnum.NONE);
+        }
+        socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("END_GAME_EVENT");
+        LOG.info("END_GAME_EVENT");
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+                pushCurrentPlayer();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
 
     }
 
@@ -216,11 +225,11 @@ public class SocketManager {
             userModel.setHost(playerUsers.size() == 0);
             playerUsers.add(userModel);
             LOG.info("Join game user " + socketIOClient.getRemoteAddress().toString() + " UserId: " + model.getUserID());
-            pushCurrentPlayer(socketIOClient);
+            pushCurrentPlayer();
         }
     }
 
-    private void pushCurrentPlayer(SocketIOClient socketIOClient) {
+    private void pushCurrentPlayer() {
         List<UserEventModel> userPlayer = new ArrayList<>();
         for (UserModel userModel : playerUsers) {
             UserEventModel userEventModel = userModel.toUserEvent();
@@ -260,6 +269,13 @@ public class SocketManager {
             }
         }
         if (userDisconnect != null) {
+            if (userDisconnect.isHost()) {
+                if (userDisconnect.getIndex() < playerUsers.size() - 1) {
+                    playerUsers.get(userDisconnect.getIndex() + 1).setHost(true);
+                } else {
+                    playerUsers.get(0).setHost(true);
+                }
+            }
             for (UserModel playerUser : playerUsers) {
                 if (playerUser.getIndex() > userDisconnect.getIndex()) {
                     int index = playerUser.getIndex();
@@ -269,7 +285,7 @@ public class SocketManager {
             playerUsers.remove(userDisconnect);
             LOG.info("User: " + userDisconnect.getUserName() + " thoát khỏi game.");
             if (!gameIsRunning) {
-                pushCurrentPlayer(socketIOClient);
+                pushCurrentPlayer();
             }
         }
     }
