@@ -6,10 +6,8 @@ package com.gem.cardgame.ui;
 
 import com.gem.cardgame.CurrentSessionUtils;
 import com.gem.cardgame.SocketManager;
-import com.gem.cardgame.model.ChatEventModel;
-import com.gem.cardgame.model.GameEventModel;
-import com.gem.cardgame.model.UserEventModel;
-import com.gem.cardgame.model.UserModel;
+import com.gem.cardgame.model.*;
+import com.gem.cardgame.obj.CardObj;
 import com.gem.cardgame.objenum.PlayerStateEnum;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -17,6 +15,7 @@ import io.socket.client.Socket;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -56,6 +55,17 @@ public class MainFrame extends javax.swing.JFrame {
                 appendToLogger(message, Color.BLUE);
             }
         });
+        socket.on("TURN_EVENT_LISTENER", (args) -> {
+            String jsonString = args[0].toString();
+            String message;
+            if (jsonString.equals(CurrentSessionUtils.USER_NAME)) {
+                message = "=>> Đến lượt bạn đi" + "\n";
+            } else {
+                message = "=>> Đến lượt " + jsonString +" đi" + "\n";
+            }
+            jTextChat.setEditable(true);
+            appendToLogger(message, Color.DARK_GRAY);
+        });
         UserEventModel user = new UserEventModel(CurrentSessionUtils.USER_ID, CurrentSessionUtils.USER_NAME);
         socket.emit("JOIN_GAME_REQUEST", gson.toJson(user));
         
@@ -64,14 +74,14 @@ public class MainFrame extends javax.swing.JFrame {
             List<UserEventModel> currentPlayers = gson.fromJson(json, new TypeToken<List<UserEventModel>>() {}.getType());
             gameView.userManager.setUsers(currentPlayers);
             
-            gameView.setVisiablePlayButton();
+            gameView.setVisiblePlayButton();
             repaint();
             updateCurrentUser();
         });
         
         socket.on("GAME_STARTED",  (args) -> {
             String hostUserId = args[0].toString();
-            if (hostUserId == null ? CurrentSessionUtils.USER_ID == null : hostUserId.equals(CurrentSessionUtils.USER_ID)) {
+            if (Objects.equals(hostUserId, CurrentSessionUtils.USER_ID)) {
                 CurrentSessionUtils.IS_HOST = true;
                 CurrentSessionUtils.IS_YOUR_TURN = true;
             } else {
@@ -83,11 +93,10 @@ public class MainFrame extends javax.swing.JFrame {
         
         socket.on("MY_CARD_EVENT", (args) -> {
             String json = args[0].toString();
-            List<Integer> cardIds = gson.fromJson(json, new TypeToken<List<Integer>>() {}.getType());
-            gameView.cardManager.addMyCard(cardIds);
+            List<CardModel> cards = gson.fromJson(json, new TypeToken<List<CardModel>>() {}.getType());
+            gameView.cardManager.addMyCard(cards);
         });
-        
-        
+
         socket.on("TOTAL_AMOUNT_UPDATED", (args) -> {
             String amountStr = args[0].toString();
             int amount = Integer.parseInt(amountStr);
@@ -99,7 +108,7 @@ public class MainFrame extends javax.swing.JFrame {
            GameEventModel event = gson.fromJson(json, GameEventModel.class);
            gameView.userManager.updateStateUser(event);
             if (event.getState() == PlayerStateEnum.UPPER) {
-                gameView.upperEvent(event.getAmount());
+                gameView.upperEvent(event.getTotal());
             }
             if (event.getUserId().equals(CurrentSessionUtils.USER_ID)) {
                 CurrentSessionUtils.IS_YOUR_TURN = false;
@@ -112,11 +121,18 @@ public class MainFrame extends javax.swing.JFrame {
             CurrentSessionUtils.IS_YOUR_TURN = true;
             gameView.yourTurn();
         });
-        
+
+        socket.on("CARD_OTHER_USER_EVEN", (args) -> {
+            String json = args[0].toString();
+            List<CardResult> results = gson.fromJson(json, new TypeToken<List<CardResult>>() {}.getType());
+            gameView.cardManager.updateCardOtherUser(results);
+            gameView.userManager.updateResult(results);
+        });
+
         socket.on("END_GAME_EVENT", (args) -> {
             gameView.endGameEvent();
         });
-        
+
     }
  
     private void updateCurrentUser() {

@@ -31,11 +31,8 @@ public class UserModel extends Obj2D {
     private List<CardObj> cards;
     private PositionObj cardPosition;
 
-    public UserModel(String userId, String userName) {
-        this.userId = userId;
-        this.userName = userName;
-        cards = new ArrayList<>();
-    }
+    private CardResult result;
+
 
     public UserModel(UserEventModel eventModel) {
         this.userId = eventModel.getUserID();
@@ -114,20 +111,26 @@ public class UserModel extends Obj2D {
         this.cardPosition = cardPosition;
     }
 
+    public CardResult getResult() {
+        return result;
+    }
+
+    public void setResult(CardResult result) {
+        this.result = result;
+    }
+
     @Override
     public void draw(Graphics2D g2) {
         super.draw(g2);
         g2.setFont(new Font("Tahoma", Font.BOLD, 13));
         g2.setColor(Color.LIGHT_GRAY);
         int widthName = g2.getFontMetrics().stringWidth(userName);
-        float nameX = (x + width / 2) - (widthName / 2);
+        float nameX = (x + width / 2) - (widthName / 2f);
         g2.drawString(userName, nameX, y);
         String statusString = "";
         if (state != null) {
             switch (state) {
-                case NONE -> {
-                    statusString = "NONE";
-                }
+                case NONE -> statusString = "NONE";
                 case UPPER -> {
                     statusString = "Đã tố";
                     g2.setColor(Color.GREEN);
@@ -147,7 +150,7 @@ public class UserModel extends Obj2D {
             }
             int widthStatus = g2.getFontMetrics().stringWidth(statusString);
             g2.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 22));
-            float stateX = (x + width / 2) - (widthStatus / 2) - 5;
+            float stateX = (x + width / 2) - (widthStatus / 2f) - 5;
             g2.drawString(statusString, stateX, y + height/2);
         }
     }

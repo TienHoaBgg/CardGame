@@ -4,6 +4,8 @@
  */
 package com.gem.cardgame;
 
+import com.gem.cardgame.model.CardModel;
+import com.gem.cardgame.model.CardResult;
 import com.gem.cardgame.obj.CardObj;
 import com.gem.cardgame.objenum.CardType;
 import com.gem.cardgame.obj.PositionObj;
@@ -27,7 +29,7 @@ public class CardManager {
     private CardCallBack callBack;
     private int currentIndex;
     private boolean isAnimation;
-    private List<Integer> myCards;
+    private List<CardModel> myCards;
     
     private int animationRepeatCount = 0;
 
@@ -42,47 +44,39 @@ public class CardManager {
     private void init() {
         cards = new ArrayList<>();
         myCards = new ArrayList<>();
-        for (int i = 1; i < 14; i++) {
-            Image roImage = Utils.getInstance().getImage("cards/Ro_" + i + ".png");
-            Image coImage = Utils.getInstance().getImage("cards/Co_" + i + ".png");
-            Image tepImage = Utils.getInstance().getImage("cards/Tep_" + i + ".png");
-            Image bichImage = Utils.getInstance().getImage("cards/Bich_" + i + ".png");
-            cards.add(new CardObj(i, CardType.RO, roImage));
-            cards.add(new CardObj(i, CardType.CO, coImage));
-            cards.add(new CardObj(i, CardType.TEP, tepImage));
-            cards.add(new CardObj(i, CardType.BICH, bichImage));
-        }
         Image upImage = Utils.getInstance().getImage("cards/back_card.png");
         blackCard = new CardObj(0, CardType.UP, upImage);
         centerCard = new CardObj(0, CardType.UP, upImage);
     }
 
-    public List<CardObj> getCards() {
-        return cards;
-    }
-    
     public CardObj getBlackCard() {
         Image upImage = Utils.getInstance().getImage("cards/back_card.png");
         return new CardObj(0, CardType.UP, upImage);
     }
     
-    public void addMyCard(List<Integer> cardIds) {
+    public void addMyCard(List<CardModel> cardIds) {
         if (isAnimation) {
             myCards = cardIds;
         } else {
             setCardToUser(cardIds, CurrentSessionUtils.USER_ID);
         }
     }
-    
-    public void setCardToUser(List<Integer> cardIds, String userId) {
+
+    public void updateCardOtherUser(List<CardResult> results) {
+        for (CardResult result : results) {
+            setCardToUser(result.getCards(), result.getUserId());
+        }
+    }
+
+    public void setCardToUser(List<CardModel> cards, String userId) {
         for(UserModel user : users) {
             if (user.getUserId().equals(userId)) {
-                user.getCards().clear();
-                for (Integer cardId : cardIds) {
-                    if (cardId < cards.size()) {
-                        user.getCards().add(cards.get(cardId));
-                    }
+                List<CardObj> cardObjs = new ArrayList<>();
+                for (CardModel model : cards) {
+                    Image image = Utils.getInstance().getImage(model.getUrl());
+                    cardObjs.add(new CardObj(model.getValue(), model.getType(), image));
                 }
+                user.setCards(cardObjs);
                 break;
             }
         }
@@ -160,7 +154,7 @@ public class CardManager {
                     float yCard = user.getY() + user.getHeight() + 24;
                     user.setCardPosition(new PositionObj(xCenter - width / 2, yCard));
                     int cardNumber = cardCount - 1;
-                    float widthCards = (cardNumber >= 0 ? cardNumber : 0) * (width * 2/3) + width;
+                    float widthCards = (Math.max(cardNumber, 0)) * (width * 2/3) + width;
                     xCenter -= widthCards / 2;
                     for (int i = 0; i < cardCount; i++) {
                         CardObj card = user.getCards().get(i);
@@ -191,7 +185,7 @@ public class CardManager {
                     float yCard = user.getY();
                     user.setCardPosition(new PositionObj(xCard, yCard));
                     int cardNumber = cardCount - 1;
-                    float widthCards = (cardNumber >= 0 ? cardNumber : 0) * (width * 2/3) + width;
+                    float widthCards = (Math.max(cardNumber, 0)) * (width * 2/3) + width;
                     xCard -= widthCards;
                     for (int i = 0; i < cardCount; i++) {
                         CardObj card = user.getCards().get(i);

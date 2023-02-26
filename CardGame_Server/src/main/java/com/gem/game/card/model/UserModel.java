@@ -12,7 +12,7 @@ public class UserModel {
     private boolean isHost;
     private boolean yourTurn;
     private PlayerStateEnum playerState;
-    private List<Integer> cards;
+    private List<Integer> cardIds;
     private SocketIOClient socketIOClient;
 
     public UserModel(int index, UserEventModel userEventModel, SocketIOClient socketIOClient) {
@@ -20,7 +20,7 @@ public class UserModel {
         this.userID = userEventModel.getUserID();
         this.userName = userEventModel.getUserName();
         this.socketIOClient = socketIOClient;
-        this.cards = new ArrayList<>();
+        this.cardIds = new ArrayList<>();
     }
 
     public int getIndex() {
@@ -71,12 +71,12 @@ public class UserModel {
         isHost = host;
     }
 
-    public List<Integer> getCards() {
-        return cards;
+    public List<Integer> getCardIds() {
+        return cardIds;
     }
 
-    public void setCards(List<Integer> cards) {
-        this.cards = cards;
+    public void setCardIds(List<Integer> cards) {
+        this.cardIds = cards;
     }
 
     public SocketIOClient getSocketIOClient() {

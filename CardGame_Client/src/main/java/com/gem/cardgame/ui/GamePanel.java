@@ -76,7 +76,7 @@ public class GamePanel extends JPanel implements CardCallBack {
         
     }
     
-    public void setVisiablePlayButton() {
+    public void setVisiblePlayButton() {
         startButton.setVisible(CurrentSessionUtils.IS_HOST);
     }
     
@@ -114,23 +114,23 @@ public class GamePanel extends JPanel implements CardCallBack {
                     value = userUpperAmount - yourAmount;
                 }
                 yourAmount += value;
-                GameEventModel model = new GameEventModel(value, PlayerStateEnum.FOLLOW);
+                GameEventModel model = new GameEventModel(value, yourAmount, PlayerStateEnum.FOLLOW);
                 socket.emit("PLAYER_FOLLOW_EVENT", gson.toJson(model));
             }
 
             @Override
             public void boClickAction() {
-                GameEventModel model = new GameEventModel(0, PlayerStateEnum.CANCEL);
+                GameEventModel model = new GameEventModel(0, yourAmount, PlayerStateEnum.CANCEL);
                 socket.emit("PLAYER_CANCEL_EVENT", gson.toJson(model));
             }
         });
         sliderDialog.setCallBack((int value, boolean isUp) -> {
             yourAmount += value;
             if (isUp) {
-                GameEventModel model = new GameEventModel(value, PlayerStateEnum.UPPER);
+                GameEventModel model = new GameEventModel(value, yourAmount, PlayerStateEnum.UPPER);
                 socket.emit("PLAYER_UPPER_EVENT", gson.toJson(model));
             } else {
-                GameEventModel model = new GameEventModel(value, PlayerStateEnum.FOLLOW);
+                GameEventModel model = new GameEventModel(value, yourAmount, PlayerStateEnum.FOLLOW);
                 socket.emit("PLAYER_FOLLOW_EVENT", gson.toJson(model));
             }
         });

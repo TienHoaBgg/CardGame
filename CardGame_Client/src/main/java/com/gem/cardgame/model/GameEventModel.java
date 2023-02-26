@@ -16,11 +16,13 @@ public class GameEventModel {
     private String userId;
     private PlayerStateEnum state;
     private int amount;
+    private int total;
 
-    public GameEventModel(int amount, PlayerStateEnum state) {
+    public GameEventModel(int amount, int total, PlayerStateEnum state) {
         this.index = CurrentSessionUtils.USER_INDEX;
         this.userId = CurrentSessionUtils.USER_ID;
         this.amount = amount;
+        this.total = total;
         this.state = state;
     }
     
@@ -55,5 +57,13 @@ public class GameEventModel {
     public void setAmount(int amount) {
         this.amount = amount;
     }
-    
+
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
+    }
+
 }

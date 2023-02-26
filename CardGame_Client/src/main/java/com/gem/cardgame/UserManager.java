@@ -4,6 +4,7 @@
  */
 package com.gem.cardgame;
 
+import com.gem.cardgame.model.CardResult;
 import com.gem.cardgame.model.GameEventModel;
 import com.gem.cardgame.objenum.PositionEnum;
 import com.gem.cardgame.obj.PositionObj;
@@ -37,11 +38,21 @@ public class UserManager {
     }
     
     public List<UserModel> getUsers() {
-        return usersMap.values().stream().collect(toList());
+        return new ArrayList<>(usersMap.values());
     }
     
-    public UserModel getMyInfo() {
-        return usersMap.get(0);
+    public void updateResult(List<CardResult> results) {
+        for (CardResult result : results) {
+            updateResultToUser(result);
+        }
+    }
+
+    private void updateResultToUser(CardResult result) {
+        usersMap.forEach(((key, value) -> {
+            if (value.getUserId().equals(result.getUserId())) {
+                usersMap.get(key).setResult(result);
+            }
+        }));
     }
     
     public void setUsers(List<UserEventModel> userEventModels) {
@@ -59,28 +70,24 @@ public class UserManager {
         if (currentUserIndex == -1) {
             users.add(convertToUser(currentUser.get()));
         }
-        if (currentUser.isPresent()) {
-            int userIndex = currentUser.get().getIndex();
-            usersMap.put(0, convertToUser(currentUser.get()));
-            int maxIndex = 0;
-            for (int i = userIndex + 1; i < userEventModels.size(); i++) {
-                maxIndex = i - userIndex;
-                UserModel user = convertToUser(userEventModels.get(i));
-                usersMap.put(maxIndex, user);
-                if (validateUser(user.getUserId()) == -1) {
-                    users.add(user);
-                }
+        int userIndex = currentUser.get().getIndex();
+        usersMap.put(0, convertToUser(currentUser.get()));
+        int maxIndex = 0;
+        for (int i = userIndex + 1; i < userEventModels.size(); i++) {
+            maxIndex = i - userIndex;
+            UserModel user = convertToUser(userEventModels.get(i));
+            usersMap.put(maxIndex, user);
+            if (validateUser(user.getUserId()) == -1) {
+                users.add(user);
             }
-            for (int i = 0; i < userIndex; i++) {
-                int index = i + maxIndex + 1;
-                UserModel user = convertToUser(userEventModels.get(i));
-                usersMap.put(index, user);
-                if (validateUser(user.getUserId()) == -1) {
-                    users.add(user);
-                }
+        }
+        for (int i = 0; i < userIndex; i++) {
+            int index = i + maxIndex + 1;
+            UserModel user = convertToUser(userEventModels.get(i));
+            usersMap.put(index, user);
+            if (validateUser(user.getUserId()) == -1) {
+                users.add(user);
             }
-        } else {
-            JOptionPane.showConfirmDialog(null, "Có lỗi xảy ra!!! Vui lòng thoát ra vào lại.");
         }
     }
     

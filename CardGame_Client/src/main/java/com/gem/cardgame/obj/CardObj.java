@@ -4,9 +4,11 @@
  */
 package com.gem.cardgame.obj;
 
+import com.gem.cardgame.Utils;
 import com.gem.cardgame.objenum.CardType;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.util.Objects;
 
 /**
  *
@@ -15,13 +17,6 @@ import java.awt.Image;
 public class CardObj extends Obj2D {
     private int value;
     private CardType type;
-    private boolean isUp;
-    private boolean isOpen;
-
-    public CardObj(int value, CardType type) {
-        this.value = value;
-        this.type = type;
-    }
 
     public CardObj(int value, CardType type, Image image) {
         this.value = value;
@@ -49,29 +44,9 @@ public class CardObj extends Obj2D {
         this.type = type;
     }
 
-    public boolean isIsUp() {
-        return isUp;
-    }
-
-    public void setIsUp(boolean isUp) {
-        this.isUp = isUp;
-    }
-
-    public boolean isOpen() {
-        return isOpen;
-    }
-
-    public void setOpen(boolean isOpen) {
-        this.isOpen = isOpen;
-    }
-
     @Override
     public void draw(Graphics2D g2) {
         super.draw(g2);
-        
-        
     }
-    
-    
-    
+
 }

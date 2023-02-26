@@ -2,10 +2,7 @@ package com.gem.game.card.manager;
 
 
 import com.corundumstudio.socketio.*;
-import com.gem.game.card.model.GameEventModel;
-import com.gem.game.card.model.PlayerStateEnum;
-import com.gem.game.card.model.UserEventModel;
-import com.gem.game.card.model.UserModel;
+import com.gem.game.card.model.*;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
@@ -37,7 +34,8 @@ public class SocketManager {
 
     @Autowired
     private Gson gson;
-
+    @Autowired
+    private CardManager cardManager;
     private Random random;
 
     @Value("${socketio.port}")
@@ -91,7 +89,8 @@ public class SocketManager {
         playerUsers = playerUsers.stream().sorted(Comparator.comparing(UserModel::getIndex)).collect(Collectors.toList());
         AtomicReference<String> hostUserId = new AtomicReference<>("");
         playerUsers.forEach((userModel -> {
-            userModel.getCards().clear();
+            userModel.getCardIds().clear();
+            userModel.setPlayerState(PlayerStateEnum.NONE);
             if (userModel.isHost()) {
                 hostUserId.set(userModel.getUserID());
             }
@@ -104,7 +103,7 @@ public class SocketManager {
                     cardRandom = random.nextInt(52);
                 }
                 cards.add(cardRandom);
-                playerUser.getCards().add(cardRandom);
+                playerUser.getCardIds().add(cardRandom);
             }
         }
         socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("GAME_STARTED", hostUserId.get());
@@ -113,8 +112,9 @@ public class SocketManager {
         totalAmount = 0;
         for (UserModel playerUser : playerUsers) {
             amount += 10;
-            Type listType = new TypeToken<List<Integer>>() {}.getType();
-            playerUser.getSocketIOClient().sendEvent("MY_CARD_EVENT", gson.toJson(playerUser.getCards(), listType));
+            Type listType = new TypeToken<List<CardModel>>() {}.getType();
+            List<CardModel> myCards = cardManager.getCards(playerUser.getCardIds());
+            playerUser.getSocketIOClient().sendEvent("MY_CARD_EVENT", gson.toJson(myCards, listType));
         }
         updateTotalAmount(amount);
     }
@@ -132,6 +132,7 @@ public class SocketManager {
             handleEndGame();
         } else {
             nextUser.getSocketIOClient().sendEvent("YOUR_TURN_EVENT");
+            socketIOServer.getRoomOperations(CHAT_GROUP).sendEvent("TURN_EVENT_LISTENER", nextUser.getUserName());
         }
     }
 
@@ -154,8 +155,8 @@ public class SocketManager {
         if (nextUser.isHost()) {
             handleEndGame();
         } else {
-            LOG.info("YOUR_TURN_EVENT: " + nextUser.getUserName());
             nextUser.getSocketIOClient().sendEvent("YOUR_TURN_EVENT");
+            socketIOServer.getRoomOperations(CHAT_GROUP).sendEvent("TURN_EVENT_LISTENER", nextUser.getUserName());
         }
     }
 
@@ -174,8 +175,8 @@ public class SocketManager {
                 playerUsers.get(eventModel.getIndex()).setHost(false);
                 playerUsers.get(nextUser.getIndex()).setHost(true);
             }
-            LOG.info("YOUR_TURN_EVENT: " + nextUser.getUserName());
             nextUser.getSocketIOClient().sendEvent("YOUR_TURN_EVENT");
+            socketIOServer.getRoomOperations(CHAT_GROUP).sendEvent("TURN_EVENT_LISTENER", nextUser.getUserName());
         }
     }
 
@@ -196,23 +197,30 @@ public class SocketManager {
     }
 
     private void handleEndGame() {
+        List<CardResult> cardResults = new ArrayList<>();
         for (UserModel user : playerUsers) {
-            user.setPlayerState(PlayerStateEnum.NONE);
+            CardResult  result = cardManager.getScoreId(user.getCardIds());
+            result.setUserId(user.getUserID());
+            cardResults.add(result);
         }
+        Type listType = new TypeToken<List<CardResult>>() {}.getType();
+        String resultJson = gson.toJson(cardResults, listType);
+        for (UserModel user : playerUsers) {
+            if (user.getPlayerState() != PlayerStateEnum.CANCEL) {
+                user.getSocketIOClient().sendEvent("CARD_OTHER_USER_EVEN", resultJson);
+            }
+        }
+
         socketIOServer.getRoomOperations(GAME_GROUP).sendEvent("END_GAME_EVENT");
         LOG.info("END_GAME_EVENT");
-        new Thread(() -> {
-            try {
-                Thread.sleep(2000);
-                pushCurrentPlayer();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }).start();
-
-    }
-
-    private void yourWinNotification() {
+//        new Thread(() -> {
+//            try {
+//                Thread.sleep(2000);
+//                pushCurrentPlayer();
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }).start();
 
     }
 

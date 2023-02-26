@@ -5,7 +5,7 @@ public class GameEventModel {
     private String userId;
     private PlayerStateEnum state;
     private int amount;
-
+    private int total;
     public int getIndex() {
         return index;
     }
@@ -37,6 +37,12 @@ public class GameEventModel {
     public void setAmount(int amount) {
         this.amount = amount;
     }
+    public int getTotal() {
+        return total;
+    }
 
+    public void setTotal(int total) {
+        this.total = total;
+    }
 
 }
