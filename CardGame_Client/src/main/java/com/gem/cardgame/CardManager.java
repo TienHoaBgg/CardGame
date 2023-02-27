@@ -163,6 +163,7 @@ public class CardManager {
                         card.draw(g2);
                         xCenter += width * 2 / cardCount;
                     }
+                    user.drawResult(g2);
                 }
                 case LEFT, BOTTOMLEFT, TOPLEFT -> {
                     float width = screenSize.getWidth() / 17;
@@ -177,6 +178,7 @@ public class CardManager {
                         card.draw(g2);
                         xCard += width * 2 / cardCount;
                     }
+                    user.drawResult(g2);
                 }
                 case RIGHT, TOPRIGHT, BOTTOMRIGHT -> {
                     float width = screenSize.getWidth() / 17;
@@ -194,6 +196,7 @@ public class CardManager {
                         card.draw(g2);
                         xCard += width * 2/3;
                     }
+                    user.drawResult(g2);
                 }
                 default -> {
                 }

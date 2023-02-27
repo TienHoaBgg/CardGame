@@ -14,6 +14,7 @@ public class UserModel {
     private PlayerStateEnum playerState;
     private List<Integer> cardIds;
     private SocketIOClient socketIOClient;
+    private CardResult cardResult;
 
     public UserModel(int index, UserEventModel userEventModel, SocketIOClient socketIOClient) {
         this.index = index;
@@ -85,6 +86,14 @@ public class UserModel {
 
     public void setSocketIOClient(SocketIOClient socketIOClient) {
         this.socketIOClient = socketIOClient;
+    }
+
+    public CardResult getCardResult() {
+        return cardResult;
+    }
+
+    public void setCardResult(CardResult cardResult) {
+        this.cardResult = cardResult;
     }
 
     public UserEventModel toUserEvent() {

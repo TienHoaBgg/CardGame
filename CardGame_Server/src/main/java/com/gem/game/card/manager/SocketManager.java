@@ -202,6 +202,7 @@ public class SocketManager {
             CardResult  result = cardManager.getScoreId(user.getCardIds());
             result.setUserId(user.getUserID());
             cardResults.add(result);
+            user.setCardResult(result);
         }
         Type listType = new TypeToken<List<CardResult>>() {}.getType();
         String resultJson = gson.toJson(cardResults, listType);

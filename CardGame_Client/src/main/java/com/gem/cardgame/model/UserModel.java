@@ -4,16 +4,29 @@
  */
 package com.gem.cardgame.model;
 
+import com.gem.cardgame.CurrentSessionUtils;
+import static com.gem.cardgame.model.CardResultType.ANH;
+import static com.gem.cardgame.model.CardResultType.LIENG;
+import static com.gem.cardgame.model.CardResultType.NONE;
+import static com.gem.cardgame.model.CardResultType.SAP;
 import com.gem.cardgame.obj.CardObj;
 import com.gem.cardgame.obj.Obj2D;
 import com.gem.cardgame.obj.PositionObj;
 import com.gem.cardgame.objenum.PositionEnum;
 import com.gem.cardgame.objenum.PlayerStateEnum;
+import static com.gem.cardgame.objenum.PositionEnum.BOTTOMLEFT;
+import static com.gem.cardgame.objenum.PositionEnum.BOTTOMRIGHT;
+import static com.gem.cardgame.objenum.PositionEnum.LEFT;
+import static com.gem.cardgame.objenum.PositionEnum.RIGHT;
+import static com.gem.cardgame.objenum.PositionEnum.TOP;
+import static com.gem.cardgame.objenum.PositionEnum.TOPLEFT;
+import static com.gem.cardgame.objenum.PositionEnum.TOPRIGHT;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -32,7 +45,6 @@ public class UserModel extends Obj2D {
     private PositionObj cardPosition;
 
     private CardResult result;
-
 
     public UserModel(UserEventModel eventModel) {
         this.userId = eventModel.getUserID();
@@ -130,7 +142,8 @@ public class UserModel extends Obj2D {
         String statusString = "";
         if (state != null) {
             switch (state) {
-                case NONE -> statusString = "NONE";
+                case NONE ->
+                    statusString = "NONE";
                 case UPPER -> {
                     statusString = "Đã tố";
                     g2.setColor(Color.GREEN);
@@ -151,7 +164,40 @@ public class UserModel extends Obj2D {
             int widthStatus = g2.getFontMetrics().stringWidth(statusString);
             g2.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 22));
             float stateX = (x + width / 2) - (widthStatus / 2f) - 5;
-            g2.drawString(statusString, stateX, y + height/2);
+            g2.drawString(statusString, stateX, y + height / 2);
+        }
+    }
+
+    public void drawResult(Graphics2D g2) {
+        if (result != null && !cards.isEmpty() && !Objects.equals(userId, CurrentSessionUtils.USER_ID)) {
+            String resultString = "";
+            switch (result.getType()) {
+                case NONE ->
+                    resultString = result.getScore() + " điểm";
+                case LIENG ->
+                    resultString = "Liêng";
+                case SAP ->
+                    resultString = "Sáp";
+                case ANH ->
+                    resultString = "Ảnh";
+                default -> {
+                }
+            }
+            g2.setColor(Color.BLUE);
+            int widthStatus = g2.getFontMetrics().stringWidth(resultString);
+            g2.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 22));
+            float resultX = cardPosition.getX();
+            switch (positionEnum) {
+                case TOP ->
+                    resultX = cardPosition.getX() - widthStatus / 2;
+                case RIGHT, TOPRIGHT, BOTTOMRIGHT ->
+                    resultX = cardPosition.getX() - widthStatus;
+                case LEFT, BOTTOMLEFT, TOPLEFT ->
+                    resultX = cardPosition.getX();
+                default -> {
+                }
+            }
+            g2.drawString(resultString, resultX, cardPosition.getY() + 40);
         }
     }
 

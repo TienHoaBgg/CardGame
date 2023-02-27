@@ -1,10 +1,8 @@
 package com.gem.game.card.manager;
 
 
-import com.gem.game.card.model.CardModel;
-import com.gem.game.card.model.CardResult;
-import com.gem.game.card.model.CardType;
-import com.gem.game.card.model.ResultType;
+import com.gem.game.card.model.*;
+import org.apache.catalina.User;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.PostConstruct;
@@ -50,7 +48,14 @@ public class CardManager {
         CardModel cardThree = cards.get(2);
         int score = 0;
         for (CardModel cardModel : cards) {
-            score += cardModel.getValue();
+            if (cardModel.getValue() < 10) {
+                score += cardModel.getValue();
+            }
+        }
+        if (score > 9 && score < 20) {
+            score = score - 10;
+        } else if (score > 19) {
+            score = score - 20;
         }
         if (checkLieng(cardOne, cardTwo, cardThree)) {
             return new CardResult(userCards, score, ResultType.LIENG);
@@ -61,6 +66,55 @@ public class CardManager {
         } else {
             return new CardResult(userCards, score, ResultType.NONE);
         }
+    }
+
+    public String checkWinner(List<CardResult> cardResults) {
+
+
+
+
+        return "";
+    }
+
+    private boolean compareCardResult(CardResult r1, CardResult r2) {
+        if (r1.getType() == ResultType.SAP) {
+            if (r2.getType() != ResultType.SAP) {
+                return true;
+            } else {
+
+
+
+            }
+        }
+
+    }
+
+    private boolean compareCardType(List<CardModel> card1, List<CardModel> card2) {
+        List<CardModel> cardOne = card1.stream().sorted(Comparator.comparingInt(CardModel::getValue)).collect(Collectors.toList());
+        List<CardModel> cardTwo = card2.stream().sorted(Comparator.comparingInt(CardModel::getValue)).collect(Collectors.toList());
+        if (cardOne.get(0).getValue() == 1 && cardOne.get(0).getType() == CardType.RO) {
+            return true;
+        } else if (cardTwo.get(0).getValue() == 1 && cardTwo.get(0).getType() == CardType.RO) {
+            return false;
+        }
+        List<CardModel> cardOneRo = cardOne.stream().filter(c -> c.getType() == CardType.RO).collect(Collectors.toList());
+        List<CardModel> cardTwoRo = cardTwo.stream().filter(c -> c.getType() == CardType.RO).collect(Collectors.toList());
+        if (!cardOneRo.isEmpty() && cardTwoRo.isEmpty()) {
+            return true;
+        } else  if (cardOneRo.isEmpty() && !cardTwoRo.isEmpty()) {
+            return false;
+        } else {
+            CardModel maxOneRo = cardOneRo.get(cardOneRo.size() - 1);
+            CardModel maxTwoRo = cardTwoRo.get(cardTwoRo.size() - 1);
+            if (maxOneRo.getValue() > maxTwoRo.getValue()) {
+                return true;
+            }
+            
+        }
+
+
+
+
     }
 
     private boolean checkLieng(CardModel c1, CardModel c2, CardModel c3) {

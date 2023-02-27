@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import static java.util.stream.Collectors.toList;
-import javax.swing.JOptionPane;
 
 /**
  *
